@@ -1,15 +1,18 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:vote/electeur_path/motDePasseOublie.dart';
-import 'package:vote/electeur_path/step1Inscription.dart';
+//import 'package:vote/electeur_path/motDePasseOublie.dart';
+//import 'package:vote/electeur_path/step1Inscription.dart';
 
 import 'package:get/get.dart';
 import 'inscriptionController.dart';
 import 'package:http/http.dart' as http;
+
+import 'package:image_picker/image_picker.dart';
 
 class AllPageInscriptionElecteur extends StatefulWidget {
   const AllPageInscriptionElecteur({super.key});
@@ -28,6 +31,26 @@ class _AllPageInscriptionElecteurState
   final List<String> _Language = ["fr", "en"];
   String _selectedItem = "fr";
   final PageController _pageController = PageController(initialPage: 0);
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  //select image
+  File? _image; //fichier choisis
+  PickedFile? _pickedFile;
+  final _picker = ImagePicker();
+
+  Future<void> _pickImage() async {
+    try {
+      _pickedFile = await _picker.getImage(source: ImageSource.gallery);
+      if (_pickedFile != null) {
+        setState(() {
+          _image = File(_pickedFile!.path);
+        });
+      }
+    } catch (e) {
+      // ignore: avoid_print, unnecessary_brace_in_string_interps
+      print("error selected image: ${e}");
+    }
+  } //fichier selectionner maintenant le fichier choisis
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +61,7 @@ class _AllPageInscriptionElecteurState
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           home: Scaffold(
+            key: _scaffoldKey,
             resizeToAvoidBottomInset: false,
             backgroundColor: Colors.white,
             appBar: AppBar(
@@ -183,8 +207,8 @@ class _AllPageInscriptionElecteurState
                         keyboardType: TextInputType.number,
                         controller: TextEditingController(
                             text: inscriptionController.ageController.value),
-                        onChanged: (value) => inscriptionController
-                            .changeResidenceController(value),
+                        onChanged: (value) =>
+                            inscriptionController.changeAgeController(value),
                         decoration: InputDecoration(
                           contentPadding:
                               const EdgeInsets.only(bottom: 15, top: 15),
@@ -310,6 +334,61 @@ class _AllPageInscriptionElecteurState
                         }).toList(),
                       ),
                       /*-----------------*/
+                      SizedBox(height: ScreenUtil().setHeight(50)),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Pièces d\'identité',
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 17,
+                              color: const Color(0xFF3F3F3F),
+                            ),
+                          ),
+                          SizedBox(
+                            height: ScreenUtil().setHeight(50),
+                          ),
+                          Row(
+                            children: [
+                              SizedBox(
+                                height: ScreenUtil().setHeight(190),
+                                width: ScreenUtil().setWidth(190),
+                                child: MaterialButton(
+                                  onPressed: () {
+                                    _pickImage();
+                                  },
+                                  height: ScreenUtil().setHeight(190),
+                                  color: const Color(0xFF53d4ff),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5.0),
+                                  ),
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.camera_alt,
+                                      color: Colors.white,
+                                      size: 35.0,
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                            /*-------------------*/
+                            Container(
+                               height: ScreenUtil().setHeight(190),
+                               width: ScreenUtil().setWidth(190),
+                               margin: const EdgeInsets.only(left: 10),
+                               decoration: const BoxDecoration(),
+                               child: _pickedFile !=null ? Image.file(
+                                File(_pickedFile!.path), fit: BoxFit.cover,
+                               ) : const Text("")
+                            ),
+
+                            ],
+                          ),
+                        ],
+                      ),
+                      /*-----------------*/
                       SizedBox(height: ScreenUtil().setHeight(100)),
                       MaterialButton(
                         padding: const EdgeInsets.all(10),
@@ -362,15 +441,42 @@ class _AllPageInscriptionElecteurState
   }
 
   Future<void> submitData() async {
+    // ignore: avoid_print
     print("salut");
-    String nom = inscriptionController.nameController.value;
-    String identifiantConnection = inscriptionController.identificationNumberController.value;
-    final body = {"complete_name": nom};
-
-    const url = "http://10.0.2.2:8000/api/user";
-    final uri = Uri.parse(url);
 
     try {
+      String nom = inscriptionController.nameController.value;
+      String identifiantnumero =
+          inscriptionController.identificationNumberController.value;
+      String email = inscriptionController.emailController.value;
+      String mdp = inscriptionController.motDePasseController.value;
+      int age = int.parse(inscriptionController.ageController.value);
+      String citoyennete = inscriptionController.citoyenneteController.value;
+      String telephone = inscriptionController.numTelController.value;
+      String residence = inscriptionController.residenceController.value;
+      String language = inscriptionController.languageController.value;
+
+      List<int> imageBytes = _image!.readAsBytesSync();
+       String base64Image = base64Encode(imageBytes);
+      //File filebase64 = 
+
+      final body = {
+        "complete_name": nom,
+        "email": email,
+        "identification_number": identifiantnumero,
+        "password": mdp,
+        "age": age,
+        "citoyennete": citoyennete,
+        "telephone": telephone,
+        "residence": residence,
+        "language": language,
+        "role": "electeur",
+        "pieces_jointes": imageBytes
+      };
+      // ignore: avoid_print
+      print(body);
+      const url = "http://10.0.2.2:8000/api/user";
+      final uri = Uri.parse(url);
       var response = await http.post(
         uri,
         body: jsonEncode(body),
@@ -378,10 +484,13 @@ class _AllPageInscriptionElecteurState
           'Content-Type': 'application/json',
         },
       );
-      if (response.statusCode == 200) {
-        print('User created successfully');
+      if (response.statusCode == 201) {
+        print('User created successfully: ${response.body}');
+        showSucessMessage('l\'opperation a réussi vous pouvez vos connecter');
       } else {
-        print('Failed to create user. Status code: ${response.statusCode}');
+        print('Failed to create user. Status code: ${response.body}');
+        showErrorMessage(
+            'l\'oppération de céation a echoué verifier vos informations');
       }
     } catch (e) {
       print("Error opperation: $e");
@@ -389,24 +498,73 @@ class _AllPageInscriptionElecteurState
   }
 
   void showSucessMessage(String message) {
-    final snackBar = SnackBar(
-      content: Text(message),
-      backgroundColor: Colors.red,
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Creation de compte reussie'),
+          content: Text(message),
+          actions: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    ).then(
+      (value) => Future.delayed(
+        const Duration(seconds: 1),
+        () {
+          Navigator.of(context).pop();
+        },
+      ),
     );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  void showErrorMessage(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Echec de la création'),
+          content: Container(
+            decoration: BoxDecoration(
+              color: Colors.red,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              message,
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void sendData2() async {
-     String nom = inscriptionController.nameController.value;
-     final data = {"complete_name": nom};
+    String nom = inscriptionController.nameController.value;
+    final data = {"complete_name": nom};
     try {
       final dio = Dio();
-     
-      final response = await dio.post('http://10.0.2.2:8000/api/user', data: data);
+
+      final response =
+          await dio.post('http://10.0.2.2:8000/api/user', data: data);
       print("bonjour");
       print(response.data);
-
-    }catch (e) {
+    } catch (e) {
       print("Error send2 : $e");
     }
   }
