@@ -35,16 +35,27 @@ class _AllPageInscriptionElecteurState
 
   //select image
   File? _image; //fichier choisis
+  File? _image2;
   PickedFile? _pickedFile;
+  PickedFile? _pickedFile2;
   final _picker = ImagePicker();
 
   Future<void> _pickImage() async {
     try {
-      _pickedFile = await _picker.getImage(source: ImageSource.gallery);
-      if (_pickedFile != null) {
-        setState(() {
-          _image = File(_pickedFile!.path);
-        });
+      if (_pickedFile == null) {
+        _pickedFile = await _picker.getImage(source: ImageSource.gallery);
+        if (_pickedFile != null) {
+          setState(() {
+            _image = File(_pickedFile!.path);
+          });
+        }
+      }else{
+         _pickedFile2 = await _picker.getImage(source: ImageSource.gallery);
+         if (_pickedFile2 != null) {
+          setState(() {
+            _image2 = File(_pickedFile2!.path);
+          });
+        }
       }
     } catch (e) {
       // ignore: avoid_print, unnecessary_brace_in_string_interps
@@ -375,22 +386,37 @@ class _AllPageInscriptionElecteurState
 
                               /*-------------------*/
                               Container(
-                                  height: ScreenUtil().setHeight(190),
-                                  width: ScreenUtil().setWidth(190),
-                                  margin: const EdgeInsets.only(left: 10),
-                                  decoration: const BoxDecoration(),
-                                  child: _pickedFile != null
-                                      ? Image.file(
-                                          File(_pickedFile!.path),
-                                          fit: BoxFit.cover,
-                                        )
-                                      : const Text("")),
+                                height: ScreenUtil().setHeight(190),
+                                width: ScreenUtil().setWidth(190),
+                                margin: const EdgeInsets.only(left: 10),
+                                decoration: const BoxDecoration(),
+                                child: _pickedFile != null
+                                    ? Image.file(
+                                        File(_pickedFile!.path),
+                                        fit: BoxFit.cover,
+                                      )
+                                    : const Text(""),
+                              ),
+                              /*-------------------*/
+                              Container(
+                                height: ScreenUtil().setHeight(190),
+                                width: ScreenUtil().setWidth(190),
+                                margin: const EdgeInsets.only(left: 10),
+                                decoration: const BoxDecoration(),
+                                child: _pickedFile2 != null
+                                    ? Image.file(
+                                        File(_pickedFile2!.path),
+                                        fit: BoxFit.cover,
+                                      )
+                                    : const Text(""),
+                              ),
+                              /*-------------------*/
                             ],
                           ),
                         ],
                       ),
                       /*-----------------*/
-                      SizedBox(height: ScreenUtil().setHeight(100)),
+                      SizedBox(height: ScreenUtil().setHeight(300)),
                       MaterialButton(
                         padding: const EdgeInsets.all(10),
                         onPressed: () {
@@ -451,7 +477,7 @@ class _AllPageInscriptionElecteurState
           inscriptionController.identificationNumberController.value;
       String email = inscriptionController.emailController.value;
       String mdp = inscriptionController.motDePasseController.value;
-      int age = int.parse(inscriptionController.ageController.value);
+     // int age = int.parse(inscriptionController.ageController.value);
       String citoyennete = inscriptionController.citoyenneteController.value;
       String telephone = inscriptionController.numTelController.value;
       String residence = inscriptionController.residenceController.value;
@@ -463,12 +489,19 @@ class _AllPageInscriptionElecteurState
 
       final imageStream = http.ByteStream(_image!.openRead());
       final imageLength = await _image!.length();
+
       final image = http.MultipartFile.fromBytes(
-        'pieces_jointes',
+        'pieces_jointes[]',
         File(_image!.path).readAsBytesSync(),
         filename: _image!.path,
-        
       );
+
+        final image2 = http.MultipartFile.fromBytes(
+        'pieces_jointes[]',
+        File(_image2!.path).readAsBytesSync(),
+        filename: _image2!.path,
+      );
+
 
       const url = "http://10.0.2.2:8000/api/user";
       final uri = Uri.parse(url);
@@ -486,11 +519,15 @@ class _AllPageInscriptionElecteurState
         "role": "electeur",
       });
       formData.files.add(image);
-      final response =await formData.send();
-      if (response.statusCode == 200) {
+      formData.files.add(image2);
+      final response = await formData.send();
+      if (response.statusCode == 201) {
         print("Upload success");
+        showSucessMessage('l\'opperation a réussi vous pouvez vos connecter');
       } else {
         print("Upload failed with status ${response.statusCode}");
+        showErrorMessage(
+            'l\'oppération de céation a echoué verifier vos informations');
       }
 
       final body = {
@@ -498,7 +535,7 @@ class _AllPageInscriptionElecteurState
         "email": email,
         "identification_number": identifiantnumero,
         "password": mdp,
-        "age": age,
+       // "age": age,
         "citoyennete": citoyennete,
         "telephone": telephone,
         "residence": residence,
@@ -507,7 +544,7 @@ class _AllPageInscriptionElecteurState
         "pieces_jointes": imageBytes
       };
       // ignore: avoid_print
-    //  print(body);
+      //  print(body);
       /* const url = "http://10.0.2.2:8000/api/user";
       final uri = Uri.parse(url);*/
       /*var response = await http.post(

@@ -170,9 +170,9 @@ class MainSection extends StatelessWidget {
             ),
           ),
           SizedBox(height: ScreenUtil().setHeight(10)),
-          Container(
+          SizedBox(
             width: double.infinity,
-            height: ScreenUtil().setHeight(470),
+            height:150,
             // decoration: const BoxDecoration(color: Colors.red),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
