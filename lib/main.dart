@@ -127,7 +127,7 @@ class SelectorRoleSection extends StatelessWidget {
                       'Organisateurs',
                       style: GoogleFonts.poppins(
                         fontSize: 20,
-                        color: const Color(0xFF53d4ff),
+                        color: const Color(0xFF53d4ff),    
                       ),
                     ),
                   ),
