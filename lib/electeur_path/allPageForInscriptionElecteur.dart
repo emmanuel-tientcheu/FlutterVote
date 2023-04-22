@@ -373,17 +373,18 @@ class _AllPageInscriptionElecteurState
                                 ),
                               ),
 
-                            /*-------------------*/
-                            Container(
-                               height: ScreenUtil().setHeight(190),
-                               width: ScreenUtil().setWidth(190),
-                               margin: const EdgeInsets.only(left: 10),
-                               decoration: const BoxDecoration(),
-                               child: _pickedFile !=null ? Image.file(
-                                File(_pickedFile!.path), fit: BoxFit.cover,
-                               ) : const Text("")
-                            ),
-
+                              /*-------------------*/
+                              Container(
+                                  height: ScreenUtil().setHeight(190),
+                                  width: ScreenUtil().setWidth(190),
+                                  margin: const EdgeInsets.only(left: 10),
+                                  decoration: const BoxDecoration(),
+                                  child: _pickedFile != null
+                                      ? Image.file(
+                                          File(_pickedFile!.path),
+                                          fit: BoxFit.cover,
+                                        )
+                                      : const Text("")),
                             ],
                           ),
                         ],
@@ -457,8 +458,40 @@ class _AllPageInscriptionElecteurState
       String language = inscriptionController.languageController.value;
 
       List<int> imageBytes = _image!.readAsBytesSync();
-       String base64Image = base64Encode(imageBytes);
-      //File filebase64 = 
+
+      String base64Image = base64Encode(imageBytes);
+
+      final imageStream = http.ByteStream(_image!.openRead());
+      final imageLength = await _image!.length();
+      final image = http.MultipartFile.fromBytes(
+        'pieces_jointes',
+        File(_image!.path).readAsBytesSync(),
+        filename: _image!.path,
+        
+      );
+
+      const url = "http://10.0.2.2:8000/api/user";
+      final uri = Uri.parse(url);
+      final formData = http.MultipartRequest('POST', Uri.parse(url));
+      formData.fields.addAll({
+        "complete_name": nom,
+        "email": email,
+        "identification_number": identifiantnumero,
+        "password": mdp,
+        "age": "25",
+        "citoyennete": citoyennete,
+        "telephone": telephone,
+        "residence": residence,
+        "language": language,
+        "role": "electeur",
+      });
+      formData.files.add(image);
+      final response =await formData.send();
+      if (response.statusCode == 200) {
+        print("Upload success");
+      } else {
+        print("Upload failed with status ${response.statusCode}");
+      }
 
       final body = {
         "complete_name": nom,
@@ -474,10 +507,10 @@ class _AllPageInscriptionElecteurState
         "pieces_jointes": imageBytes
       };
       // ignore: avoid_print
-      print(body);
-      const url = "http://10.0.2.2:8000/api/user";
-      final uri = Uri.parse(url);
-      var response = await http.post(
+    //  print(body);
+      /* const url = "http://10.0.2.2:8000/api/user";
+      final uri = Uri.parse(url);*/
+      /*var response = await http.post(
         uri,
         body: jsonEncode(body),
         headers: {
@@ -491,7 +524,7 @@ class _AllPageInscriptionElecteurState
         print('Failed to create user. Status code: ${response.body}');
         showErrorMessage(
             'l\'oppération de céation a echoué verifier vos informations');
-      }
+      }*/
     } catch (e) {
       print("Error opperation: $e");
     }
