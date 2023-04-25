@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
           home: Scaffold(
             backgroundColor: Colors.white,
             appBar: AppBar(
-              backgroundColor: Colors.white,
+              backgroundColor: Colors.white,  
               elevation: 0,
             ),
             body: Column(
@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
                 Center(
                   child: imageSection,
                 ),
-                SizedBox(height: ScreenUtil().setWidth(300)),
+                SizedBox(height:300.h),
                 const Expanded(
                   child: SelectorRoleSection(),
                 ),
@@ -44,8 +44,8 @@ class MyApp extends StatelessWidget {
 }
 
 Widget imageSection = SizedBox(
-  height: ScreenUtil().setHeight(640),
-  width: ScreenUtil().setWidth(640),
+  height: 640.h,
+  width: 640.w,
   child: Image.asset('assets/images/imageDeVote.png'),
 );
 
@@ -66,10 +66,10 @@ class SelectorRoleSection extends StatelessWidget {
               Text(
                 'Se connecter en tant que',
                 style: GoogleFonts.poppins(
-                  fontSize: 25,
+                  fontSize: 80.sp,
                 ),
               ),
-              SizedBox(height: ScreenUtil().setWidth(100)),
+              SizedBox(height:110.h),
               Container(
                 margin: const EdgeInsets.fromLTRB(70, 0, 70, 0).r,
                 child: MaterialButton(
@@ -94,14 +94,14 @@ class SelectorRoleSection extends StatelessWidget {
                     child: Text(
                       'Electeur',
                       style: GoogleFonts.poppins(
-                        fontSize: 20,
+                        fontSize: 60.sp,
                         color: const Color(0xFF53d4ff),
                       ),
                     ),
                   ),
                 ),
               ),
-              SizedBox(height: ScreenUtil().setWidth(90)),
+              SizedBox(height: 100.h),
               Container(
                 margin: const EdgeInsets.fromLTRB(70, 0, 70, 0).r,
                 child: MaterialButton(
@@ -126,7 +126,7 @@ class SelectorRoleSection extends StatelessWidget {
                     child: Text(
                       'Organisateurs',
                       style: GoogleFonts.poppins(
-                        fontSize: 20,
+                        fontSize: 60.sp,
                         color: const Color(0xFF53d4ff),
                       ),
                     ),

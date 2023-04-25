@@ -169,10 +169,10 @@ class MainSection extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: ScreenUtil().setHeight(10)),
+          SizedBox(height: 10.h),
           SizedBox(
             width: double.infinity,
-            height:150,
+            height: ScreenUtil().setHeight(370),
             // decoration: const BoxDecoration(color: Colors.red),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -182,13 +182,13 @@ class MainSection extends StatelessWidget {
                   child: Text(
                     "j'ai pas de compte",
                     style: GoogleFonts.poppins(
-                      fontSize: 15,
+                      fontSize: 50.sp,
                       color: const Color(0xFF3F3F3F),
                     ),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(left: 15, right: 15),
+                  padding: const EdgeInsets.only(left: 15, right: 15, ),
                   child: GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -201,7 +201,7 @@ class MainSection extends StatelessWidget {
                     child: Text(
                       "créer un compte",
                       style: GoogleFonts.poppins(
-                        fontSize: 15,
+                        fontSize: 50.sp,
                         color: const Color(0xFF0CB7F2),
                       ),
                     ),
