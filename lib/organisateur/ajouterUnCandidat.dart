@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vote/organisateur/Controllers/candidatController.dart';
+
+import 'package:get/get.dart';
+
 
 class AjoutCandidat extends StatefulWidget {
   const AjoutCandidat({super.key});
@@ -12,6 +16,9 @@ class AjoutCandidat extends StatefulWidget {
 class _AjoutCandidatState extends State<AjoutCandidat> {
   Color primary = const Color(0xFF0CB7F2);
   Color secondary = const Color(0xFF3F3F3F);
+  /*---------------------------------------------*/
+  //controller pour ajouter un candidat
+  CandidatController candidatController = Get.find();
 
   @override
   Widget build(BuildContext context) {
@@ -19,10 +26,10 @@ class _AjoutCandidatState extends State<AjoutCandidat> {
       designSize: const Size(1080, 2160),
       minTextAdapt: true,
       builder: (context, child) {
-        return MaterialApp(
+        return GetMaterialApp(
           debugShowCheckedModeBanner: false,
           home: Scaffold(
-            resizeToAvoidBottomInset: false,
+           resizeToAvoidBottomInset: false,
             appBar: AppBar(
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back_ios, size: 24),
@@ -125,6 +132,8 @@ class _AjoutCandidatState extends State<AjoutCandidat> {
                         ],
                       ),
                       child: TextField(
+                        controller: TextEditingController(text: candidatController.nom.value),
+                        onChanged: (value) => candidatController.changeNomController(value),
                         keyboardType: TextInputType.emailAddress,
                         cursorColor: Colors.black,
                         decoration: InputDecoration(
@@ -168,7 +177,8 @@ class _AjoutCandidatState extends State<AjoutCandidat> {
                         ],
                       ),
                       child: TextField(
-                        keyboardType: TextInputType.emailAddress,
+                        controller: TextEditingController(text: candidatController.age.value),
+                        onChanged: (value) => candidatController.changeAgeController(value),
                         cursorColor: Colors.black,
                         decoration: InputDecoration(
                           contentPadding:
@@ -211,7 +221,8 @@ class _AjoutCandidatState extends State<AjoutCandidat> {
                         ],
                       ),
                       child: TextField(
-                        keyboardType: TextInputType.emailAddress,
+                        controller: TextEditingController(text: candidatController.fonction.value),
+                        onChanged: (value) => candidatController.changeFonctionController(value),
                         cursorColor: Colors.black,
                         decoration: InputDecoration(
                           contentPadding:
@@ -221,7 +232,7 @@ class _AjoutCandidatState extends State<AjoutCandidat> {
                             Icons.event_note,
                             color: secondary,
                           ),
-                          hintText: 'Veillez entrez l\'age du candidat',
+                          hintText: 'Veillez entrez la fonction du candidat',
                           hintStyle: GoogleFonts.poppins(
                             color: secondary,
                           ),
@@ -254,7 +265,8 @@ class _AjoutCandidatState extends State<AjoutCandidat> {
                         ],
                       ),
                       child: TextField(
-                        keyboardType: TextInputType.emailAddress,
+                        controller: TextEditingController(text: candidatController.adresseMail.value),
+                        onChanged: (value) => candidatController.changeAdresseMailController(value),
                         cursorColor: Colors.black,
                         decoration: InputDecoration(
                           contentPadding:
@@ -282,7 +294,7 @@ class _AjoutCandidatState extends State<AjoutCandidat> {
                       children: [
                         Container(
                           width: 550.w,
-                          height: 100.h,
+                          height: 120.h,
                           decoration: BoxDecoration(
                             color: primary,
                             borderRadius: const BorderRadius.horizontal(
@@ -291,7 +303,9 @@ class _AjoutCandidatState extends State<AjoutCandidat> {
                             ),
                           ),
                           child: MaterialButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              candidatController.ajouterUnNouveauCandidat();
+                            },
                             shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.horizontal(
                                 left: Radius.circular(40),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vote/organisateur/Controllers/candidatController.dart';
 
 import 'ajouterUnCandidat.dart';
 import 'navBar.dart';
@@ -33,6 +35,25 @@ class _CreerVoteState extends State<CreerVote> {
         _dateTimeString = _dateTime.toString();
       });
     });
+  }
+
+  /*---------------------------------------------*/
+  //controller pour ajouter un candidat
+ CandidatController candidatController = Get.find();
+
+  /*---------------------------------------------*/
+  //recuperation de la liste des candidats grace au setter
+  List<Candidat> listCandidat = [];
+  set candidat(List<Candidat> candidat) {
+    listCandidat = candidat;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    listCandidat = candidatController.listeCandidat;
+    print("premier");
+    print(candidatController.listeCandidat);
   }
 
   @override
@@ -256,7 +277,16 @@ class _CreerVoteState extends State<CreerVote> {
                           ),
                         ),
                         /*----------------------------------------------*/
-                        //map des
+                        //map des candidats
+                        // candidatController.listeCandidat.length >= 1 ? Text(candidatController.listeCandidat[0].nom, style: const TextStyle(color: Colors.red),): const Text(""),
+                        GetBuilder<CandidatController>(builder: (CandidatController){
+                         return Column(
+                          children: [
+                           // CandidatController.listeCandidat.length >= 1 ?  setState((){})
+                           // CandidatController.listeCandidat.map((e) => return ListTile()).toList()  : Text("")
+                          ],
+                         );
+                        }),
                         /*----------------------------------------------*/
                         space,
                         space,
@@ -265,8 +295,7 @@ class _CreerVoteState extends State<CreerVote> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    const AjoutCandidat(),
+                                builder: (context) => const AjoutCandidat(),
                               ),
                             );
                           },

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vote/organisateur/Controllers/candidatController.dart';
 
 import 'navBar.dart';
 
@@ -12,6 +14,8 @@ class OrganisateurMain extends StatefulWidget {
 }
 
 class _OrganisateurMainState extends State<OrganisateurMain> {
+  CandidatController candidatController = Get.put(CandidatController());
+
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
