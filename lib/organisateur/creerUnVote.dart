@@ -39,7 +39,7 @@ class _CreerVoteState extends State<CreerVote> {
 
   /*---------------------------------------------*/
   //controller pour ajouter un candidat
- CandidatController candidatController = Get.find();
+  CandidatController candidatController = Get.find();
 
   /*---------------------------------------------*/
   //recuperation de la liste des candidats grace au setter
@@ -65,6 +65,7 @@ class _CreerVoteState extends State<CreerVote> {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           home: Scaffold(
+            backgroundColor: Colors.white,
             drawer: const NavBar(),
             appBar: AppBar(
               elevation: 0,
@@ -276,19 +277,115 @@ class _CreerVoteState extends State<CreerVote> {
                             ),
                           ),
                         ),
+                        /*---------------------------------------------*/
+                        // titre de la liste des candidats
+                        space,
+                        Text(
+                          "Liste des candidats",
+                          style: GoogleFonts.poppins(
+                            fontSize: 50.sp,
+                            color: const Color(0xFF3F3F3F),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        space,
                         /*----------------------------------------------*/
                         //map des candidats
-                        // candidatController.listeCandidat.length >= 1 ? Text(candidatController.listeCandidat[0].nom, style: const TextStyle(color: Colors.red),): const Text(""),
-                        GetBuilder<CandidatController>(builder: (CandidatController){
-                         return Column(
-                          children: [
-                           // CandidatController.listeCandidat.length >= 1 ?  setState((){})
-                           // CandidatController.listeCandidat.map((e) => return ListTile()).toList()  : Text("")
-                          ],
-                         );
+                        GetBuilder<CandidatController>(
+                            // ignore: avoid_types_as_parameter_names, non_constant_identifier_names
+                            builder: (CandidatController) {
+                          return Column(
+                            children: CandidatController.listeCandidat
+                                .asMap()
+                                .entries
+                                .map(
+                                  (candidat) => Container(
+                                    margin: const EdgeInsets.only(bottom: 30).r,
+                                    width: double.infinity,
+                                    child: Row(
+                                      children: [
+                                        /*--------------------------------*/
+                                        //element cliquable pour retirer un cadidat de la liste
+                                        GestureDetector(
+                                          onTap: () {
+                                            candidatController
+                                                .retirerUnCandidat(
+                                                    candidat.key);
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  "le candidat a ete retirer",
+                                                  style: GoogleFonts.poppins(
+                                                    fontSize: 50.sp,
+                                                    color:
+                                                        const Color(0xFF3F3F3F),
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                                backgroundColor: Colors.red,
+                                              ),
+                                            );
+                                            //print(candidat.key);
+                                          },
+                                          child: Container(
+                                            margin: const EdgeInsets.only(
+                                                    right: 30, bottom: 15)
+                                                .r,
+                                            width: 90.w,
+                                            height: 90.h,
+                                            decoration: BoxDecoration(
+                                              color: const Color.fromARGB(
+                                                  174, 158, 158, 158),
+                                              borderRadius:
+                                                  BorderRadius.circular(50.0),
+                                            ),
+                                            child: const Center(
+                                              child: Icon(
+                                                Icons.remove,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        /*---------------------------------------*/
+                                        SizedBox(
+                                          width: 25.w,
+                                        ),
+                                        //affichage des nom et fonction des candidats
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              candidat.value.nom,
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 35.sp,
+                                                color: const Color(0xFF3F3F3F),
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              height: 0.h,
+                                            ),
+                                            Text(
+                                              candidat.value.fonction,
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 35.sp,
+                                                color: const Color(0xFF3F3F3F),
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                          );
                         }),
                         /*----------------------------------------------*/
-                        space,
+
                         space,
                         GestureDetector(
                           onTap: () {

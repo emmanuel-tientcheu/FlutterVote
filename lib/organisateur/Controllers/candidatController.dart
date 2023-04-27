@@ -16,7 +16,10 @@ class CandidatController extends GetxController {
   changeAdresseMailController(value) => adresseMail.value = value;
 
   ajouterUnNouveauCandidat() {
-    if (nom.value.length < 2 || age.value.length < 2 || fonction.value.length < 2  || adresseMail.value.length < 2) {
+    if (nom.value.length < 2 ||
+        age.value.length < 2 ||
+        fonction.value.length < 2 ||
+        adresseMail.value.length < 2) {
       Get.snackbar(
         "Un champ a été oublié",
         "vous devez remplir tout les champs pour ajouter un cadidat",
@@ -32,25 +35,33 @@ class CandidatController extends GetxController {
       fonction.value = "";
       update();
     } else {
-      _listeCandidat.add(Candidat(nom.value, age.value, fonction.value, adresseMail.value));
+      _listeCandidat.add(
+          Candidat(nom.value, age.value, fonction.value, adresseMail.value));
       nom.value = "";
       age.value = "";
       adresseMail.value = "";
       fonction.value = "";
-       Get.snackbar(
+      Get.snackbar(
         "Oppération Réussi",
         "L'utilisateur a bien été enregistrer",
         icon: const Icon(Icons.alarm),
-        backgroundColor:const Color.fromARGB(115, 12, 185, 242),
+        backgroundColor: const Color.fromARGB(115, 12, 185, 242),
         barBlur: 20,
         isDismissible: true,
-        duration: const Duration(seconds: 5),
+        duration: const Duration(seconds: 3),
       );
-       update();
+      update();
       for (Candidat candidat in _listeCandidat) {
-        print('Nom: ${candidat.nom}, Age: ${candidat.age}, Adresse mail: ${candidat.adresseMail}');
+        print(
+            'Nom: ${candidat.nom}, Age: ${candidat.age}, Adresse mail: ${candidat.adresseMail}');
       }
     }
+  }
+
+  retirerUnCandidat(int index) {
+    _listeCandidat.removeAt(index);
+  // print(index);
+    update();
   }
 }
 

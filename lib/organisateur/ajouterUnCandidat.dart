@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 
 
 class AjoutCandidat extends StatefulWidget {
-  const AjoutCandidat({super.key});
+  const AjoutCandidat({Key? key}) : super(key: key);
 
   @override
   State<AjoutCandidat> createState() => _AjoutCandidatState();
@@ -29,6 +29,7 @@ class _AjoutCandidatState extends State<AjoutCandidat> {
         return GetMaterialApp(
           debugShowCheckedModeBanner: false,
           home: Scaffold(
+            backgroundColor: Colors.white,
            resizeToAvoidBottomInset: false,
             appBar: AppBar(
               leading: IconButton(
@@ -177,6 +178,7 @@ class _AjoutCandidatState extends State<AjoutCandidat> {
                         ],
                       ),
                       child: TextField(
+                        keyboardType: TextInputType.number,
                         controller: TextEditingController(text: candidatController.age.value),
                         onChanged: (value) => candidatController.changeAgeController(value),
                         cursorColor: Colors.black,
