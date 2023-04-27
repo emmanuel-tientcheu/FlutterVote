@@ -7,10 +7,13 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+  @override
+  State<MyApp> createState() => _MyApp();
+}
 
-  // This widget is the root of your application.
+class _MyApp extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
@@ -22,7 +25,7 @@ class MyApp extends StatelessWidget {
           home: Scaffold(
             backgroundColor: Colors.white,
             appBar: AppBar(
-              backgroundColor: Colors.white,  
+              backgroundColor: Colors.white,
               elevation: 0,
             ),
             body: Column(
@@ -30,9 +33,9 @@ class MyApp extends StatelessWidget {
                 Center(
                   child: imageSection,
                 ),
-                SizedBox(height:300.h),
+                SizedBox(height: 300.h),
                 const Expanded(
-                  child: SelectorRoleSection(),
+                  child: SelectRole(),
                 ),
               ],
             ),
@@ -49,9 +52,14 @@ Widget imageSection = SizedBox(
   child: Image.asset('assets/images/imageDeVote.png'),
 );
 
-class SelectorRoleSection extends StatelessWidget {
-  const SelectorRoleSection({super.key});
+class SelectRole extends StatefulWidget {
+  const SelectRole({super.key});
+  @override
+  State<SelectRole> createState() => _SelectRoleState();
+}
 
+class _SelectRoleState extends State<SelectRole> {
+   String role = "   ";
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -69,18 +77,22 @@ class SelectorRoleSection extends StatelessWidget {
                   fontSize: 80.sp,
                 ),
               ),
-              SizedBox(height:110.h),
+              SizedBox(height: 110.h),
               Container(
                 margin: const EdgeInsets.fromLTRB(70, 0, 70, 0).r,
                 child: MaterialButton(
                   padding: const EdgeInsets.all(10),
                   onPressed: () {
-                    Navigator.push(
+                    setState(() {
+                      role = "electeur";
+                    });
+                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const ConnexionElecteur(),
+                        builder: (context) => ConnexionElecteur(role:role),
                       ),
                     );
+                   
                   },
                   color: Colors.white,
                   shape: const RoundedRectangleBorder(
@@ -107,10 +119,13 @@ class SelectorRoleSection extends StatelessWidget {
                 child: MaterialButton(
                   padding: const EdgeInsets.all(10),
                   onPressed: () {
-                    Navigator.push(
+                     setState(() {
+                      role = "organisateur";
+                    });
+                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const ConnexionElecteur(),
+                        builder: (context) => ConnexionElecteur(role:role),
                       ),
                     );
                   },
@@ -140,4 +155,3 @@ class SelectorRoleSection extends StatelessWidget {
     );
   }
 }
-

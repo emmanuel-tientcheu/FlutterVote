@@ -15,19 +15,20 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 class AllPageInscriptionElecteur extends StatefulWidget {
-  const AllPageInscriptionElecteur({super.key});
+  final String role;
+  const AllPageInscriptionElecteur({Key? key, required this.role}) : super(key: key);
   @override
   State<AllPageInscriptionElecteur> createState() =>
       _AllPageInscriptionElecteurState();
 }
 
-class _AllPageInscriptionElecteurState
-    extends State<AllPageInscriptionElecteur> {
+class _AllPageInscriptionElecteurState extends State<AllPageInscriptionElecteur> {
+
   final Mycontroller name = Get.put(Mycontroller());
   final nameController = TextEditingController();
-  final InscriptionController inscriptionController =
-      Get.put(InscriptionController());
+  final InscriptionController inscriptionController = Get.put(InscriptionController());
   bool visible = true;
+
   final List<String> _Language = ["fr", "en"];
   String _selectedItem = "fr";
   final PageController _pageController = PageController(initialPage: 0);
@@ -41,7 +42,14 @@ class _AllPageInscriptionElecteurState
   final _picker = ImagePicker();
   //loading
   bool _isloading = false;
-
+  //role
+  String roleRecive = "";
+  @override
+  void initState() {
+    super.initState();
+    roleRecive = widget.role;
+    print(roleRecive);
+  }
   Future<void> _pickImage() async {
     try {
       if (_pickedFile == null) {
@@ -532,7 +540,7 @@ class _AllPageInscriptionElecteurState
         "telephone": telephone,
         "residence": residence,
         "language": language,
-        "role": "electeur",
+        "role": roleRecive,
       });
       formData.files.add(image);
       formData.files.add(image2);

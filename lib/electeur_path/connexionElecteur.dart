@@ -3,14 +3,24 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vote/electeur_path/allPageForInscriptionElecteur.dart';
 import 'package:vote/electeur_path/motDePasseOublie.dart';
+import 'package:vote/organisateur/organisateurMain.dart';
 
 class ConnexionElecteur extends StatefulWidget {
-  const ConnexionElecteur({super.key});
+  final String role;
+  const ConnexionElecteur({Key? key, required this.role}) : super(key: key);
   @override
   State<ConnexionElecteur> createState() => _ConnexionElecteurState();
 }
 
 class _ConnexionElecteurState extends State<ConnexionElecteur> {
+  String roleRecive = "";
+  @override
+  void initState() {
+    super.initState();
+    roleRecive = widget.role;
+    print(roleRecive);
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
@@ -42,7 +52,160 @@ class _ConnexionElecteurState extends State<ConnexionElecteur> {
                     clipper: MyClipper(),
                     child: headerSection,
                   ),
-                  const Expanded(child: MainSection()),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 15, right: 15),
+                      child: Column(
+                        children: [
+                          TextField(
+                            decoration: InputDecoration(
+                              contentPadding:
+                                  const EdgeInsets.only(bottom: 15, top: 15),
+                              labelText: 'Email',
+                              labelStyle: GoogleFonts.poppins(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 17,
+                                color: const Color(0xFF3F3F3F),
+                              ),
+                              focusedBorder: const UnderlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Color(0xFF0CB7F2),
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: ScreenUtil().setWidth(50)),
+                          TextField(
+                            obscureText: true,
+                            decoration: InputDecoration(
+                              contentPadding:
+                                  const EdgeInsets.only(bottom: 15, top: 15),
+                              labelText: 'Mot De Passe',
+                              labelStyle: GoogleFonts.poppins(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 17,
+                                color: const Color(0xFF3F3F3F),
+                              ),
+                              suffixIcon: IconButton(
+                                onPressed: () {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(const SnackBar(
+                                    content: Text('ngvc'),
+                                    backgroundColor: Colors.red,
+                                  ));
+                                },
+                                icon: const Icon(
+                                  Icons.visibility,
+                                ),
+                              ),
+                              focusedBorder: const UnderlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Color(0xFF0CB7F2),
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: ScreenUtil().setWidth(25)),
+                          SizedBox(
+                            width: double.infinity,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const MotDePasseElecteurOublie(),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    'Mot de passe oublié ?',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 15,
+                                      color: const Color(0xFF3F3F3F),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: ScreenUtil().setHeight(100)),
+                                MaterialButton(
+                                  padding: const EdgeInsets.all(10),
+                                  onPressed: () {
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => const OrganisateurMain()));
+                                  },
+                                  color: Colors.white,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.horizontal(
+                                      left: Radius.circular(40),
+                                      right: Radius.circular(40),
+                                    ),
+                                    side: BorderSide(
+                                        color: Color(0xFF53d4ff), width: 2),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      'Se connecter',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 20,
+                                        color: const Color(0xFF53d4ff),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 10.h),
+                          SizedBox(
+                            width: double.infinity,
+                            height: ScreenUtil().setHeight(370),
+                            // decoration: const BoxDecoration(color: Colors.red),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: Text(
+                                    "j'ai pas de compte",
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 50.sp,
+                                      color: const Color(0xFF3F3F3F),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 15,
+                                    right: 15,
+                                  ),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                               AllPageInscriptionElecteur(role:roleRecive),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      "créer un compte",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 50.sp,
+                                        color: const Color(0xFF0CB7F2),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -70,152 +233,7 @@ Widget headerSection = Container(
   ),
 );
 
-class MainSection extends StatelessWidget {
-  const MainSection({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 15, right: 15),
-      child: Column(
-        children: [
-          TextField(
-            decoration: InputDecoration(
-              contentPadding: const EdgeInsets.only(bottom: 15, top: 15),
-              labelText: 'Email',
-              labelStyle: GoogleFonts.poppins(
-                fontWeight: FontWeight.bold,
-                fontSize: 17,
-                color: const Color(0xFF3F3F3F),
-              ),
-              focusedBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(
-                  color: Color(0xFF0CB7F2),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(height: ScreenUtil().setWidth(50)),
-          TextField(
-            obscureText: true,
-            decoration: InputDecoration(
-              contentPadding: const EdgeInsets.only(bottom: 15, top: 15),
-              labelText: 'Mot De Passe',
-              labelStyle: GoogleFonts.poppins(
-                fontWeight: FontWeight.bold,
-                fontSize: 17,
-                color: const Color(0xFF3F3F3F),
-              ),
-              suffixIcon: IconButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:  Text(''),backgroundColor: Colors.red,));
-                },
-                icon: const Icon(
-                  Icons.visibility,
-                ),
-              ),
-              focusedBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(
-                  color: Color(0xFF0CB7F2),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(height: ScreenUtil().setWidth(25)),
-          SizedBox(
-            width: double.infinity,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const MotDePasseElecteurOublie(),
-                      ),
-                    );
-                  },
-                  child: Text(
-                    'Mot de passe oublié ?',
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      color: const Color(0xFF3F3F3F),
-                    ),
-                  ),
-                ),
-                SizedBox(height: ScreenUtil().setHeight(100)),
-                MaterialButton(
-                  padding: const EdgeInsets.all(10),
-                  onPressed: () {},
-                  color: Colors.white,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.horizontal(
-                      left: Radius.circular(40),
-                      right: Radius.circular(40),
-                    ),
-                    side: BorderSide(color: Color(0xFF53d4ff), width: 2),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Se connecter',
-                      style: GoogleFonts.poppins(
-                        fontSize: 20,
-                        color: const Color(0xFF53d4ff),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 10.h),
-          SizedBox(
-            width: double.infinity,
-            height: ScreenUtil().setHeight(370),
-            // decoration: const BoxDecoration(color: Colors.red),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Text(
-                    "j'ai pas de compte",
-                    style: GoogleFonts.poppins(
-                      fontSize: 50.sp,
-                      color: const Color(0xFF3F3F3F),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 15, right: 15, ),
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AllPageInscriptionElecteur(),
-                        ),
-                      );
-                    },
-                    child: Text(
-                      "créer un compte",
-                      style: GoogleFonts.poppins(
-                        fontSize: 50.sp,
-                        color: const Color(0xFF0CB7F2),
-                      ),
-                    ),
-                  ),
-                )
-              ],
-            ),
-          )
-        ],
-      ),
-    );
-  }
-  
-}
 
 class MyClipper extends CustomClipper<Path> {
   @override
