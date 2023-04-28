@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+
 class CandidatController extends GetxController {
   final List<Candidat> _listeCandidat = [];
   var nom = "".obs;

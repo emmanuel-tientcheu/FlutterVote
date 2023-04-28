@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'creerUnVote.dart';
+import 'listVoteCreer.dart';
 
 class NavBar extends StatefulWidget {
   const NavBar({super.key});
@@ -72,11 +73,22 @@ class _NavaBarState extends State<NavBar> {
           ),
           spacer,
           ListTile(
-            title: Text(
-              "Consulter la liste des votes",
-              style: GoogleFonts.poppins(
-                fontSize: 50.sp,
-                color: secondary,
+            title: GestureDetector(
+                 onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        const ListVote(),
+                  ),
+                );
+              },
+              child: Text(
+                "Consulter la liste des votes",
+                style: GoogleFonts.poppins(
+                  fontSize: 50.sp,
+                  color: secondary,
+                ),
               ),
             ),
             leading: Icon(

@@ -3,10 +3,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vote/organisateur/Controllers/candidatController.dart';
+import 'package:vote/organisateur/Controllers/voteController.dart';
 
 import 'ajouterUnCandidat.dart';
 import 'navBar.dart';
 import 'package:intl/intl.dart';
+
+import 'package:http/http.dart' as http;
+import 'package:quickalert/quickalert.dart';
 
 class CreerVote extends StatefulWidget {
   const CreerVote({super.key});
@@ -22,6 +26,27 @@ class _CreerVoteState extends State<CreerVote> {
   /*---------------------*/
   String _dateTimeString = " ";
   DateTime _dateTime = DateTime.now();
+  DateTime _dateTimeEnd = DateTime.now();
+  /*---------------------*/
+  TimeOfDay _heureDebut = TimeOfDay.now();
+  TimeOfDay _heureFin = TimeOfDay.now();
+  /*---------------------------------*/
+  //variable pour le loader
+  bool _isloading = false;
+
+  void _showDatePickerEnd() {
+    showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+    ).then((value) {
+      setState(() {
+        _dateTimeEnd = value!;
+        _dateTimeString = _dateTimeEnd.toString();
+      });
+    });
+  }
 
   void _showDatePicker() {
     showDatePicker(
@@ -37,6 +62,41 @@ class _CreerVoteState extends State<CreerVote> {
     });
   }
 
+  /*---------------------------------------------*/
+  //cette fonction aide a choisir une heure
+  void _showTimePickerStart() {
+    showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    ).then((value) {
+      setState(() {
+        _heureDebut = value!;
+        //nous convertisson l'heure sous le format heure minute
+        print(
+            "${_heureDebut.hour}:${_heureDebut.minute.toString().padLeft(2, '0')}");
+      });
+    });
+  }
+
+  /*---------------------------------------------*/
+  //cette fonction aide a choisir une fin
+  void _showTimePickerEnd() {
+    showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    ).then((value) {
+      setState(() {
+        _heureFin = value!;
+        //nous convertisson l'heure sous le format heure minute
+        print(
+            "${_heureFin.hour}:${_heureFin.minute.toString().padLeft(2, '0')}");
+      });
+    });
+  }
+
+  /*---------------------------------------------*/
+  //controller pour la creation de vote
+  VoteController voteController = Get.put(VoteController());
   /*---------------------------------------------*/
   //controller pour ajouter un candidat
   CandidatController candidatController = Get.find();
@@ -96,38 +156,50 @@ class _CreerVoteState extends State<CreerVote> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        Container(
-                          margin: EdgeInsets.only(top: 50.h, right: 50.w),
-                          padding: EdgeInsets.symmetric(vertical: 5.h),
-                          height: 120.h,
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: const Color(0xFF3F3F3F),
-                              width: 1.0,
+                        /*--------------------------*/
+                        //builder titre vote
+                        GetBuilder<VoteController>(
+                            // ignore: avoid_types_as_parameter_names, non_constant_identifier_names
+                            builder: (VoteController) {
+                          return Container(
+                            width: double.infinity,
+                            margin: EdgeInsets.only(top: 50.h, right: 50.w),
+                            padding: EdgeInsets.symmetric(vertical: 5.h),
+                            height: 120.h,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: const Color(0xFF3F3F3F),
+                                width: 1.0,
+                              ),
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(5),
+                                topRight: Radius.circular(5),
+                                bottomLeft: Radius.circular(5),
+                                bottomRight: Radius.circular(5),
+                              ),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.white,
+                                  blurRadius: 10,
+                                  offset: Offset(0, 4),
+                                )
+                              ],
                             ),
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(5),
-                              topRight: Radius.circular(5),
-                              bottomLeft: Radius.circular(5),
-                              bottomRight: Radius.circular(5),
+                            child: TextField(
+                              controller: TextEditingController(
+                                  text: VoteController.titre),
+                              onChanged: (value) =>
+                                  VoteController.changeTitreController(value),
+                              cursorColor: Colors.black,
+                              decoration: const InputDecoration(
+                                contentPadding: EdgeInsets.only(
+                                    bottom: 15, left: 15, top: 30),
+                                border: InputBorder.none,
+                              ),
                             ),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Colors.white,
-                                blurRadius: 10,
-                                offset: Offset(0, 4),
-                              )
-                            ],
-                          ),
-                          child: const TextField(
-                            cursorColor: Colors.black,
-                            decoration: InputDecoration(
-                              contentPadding: EdgeInsets.only(
-                                  bottom: 15, left: 15, top: 30),
-                              border: InputBorder.none,
-                            ),
-                          ),
-                        ),
+                          );
+                        }),
+
                         /*----------------------------------------------*/
                         space,
                         Text(
@@ -138,38 +210,49 @@ class _CreerVoteState extends State<CreerVote> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        Container(
-                          margin: EdgeInsets.only(top: 50.h, right: 50.w),
-                          padding: EdgeInsets.symmetric(vertical: 5.h),
-                          height: 120.h,
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: const Color(0xFF3F3F3F),
-                              width: 1.0,
+                        /*--------------------------*/
+                        //builder description vote
+                        GetBuilder<VoteController>(
+                            // ignore: avoid_types_as_parameter_names, non_constant_identifier_names
+                            builder: (VoteController) {
+                          return Container(
+                            margin: EdgeInsets.only(top: 50.h, right: 50.w),
+                            padding: EdgeInsets.symmetric(vertical: 5.h),
+                            height: 120.h,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: const Color(0xFF3F3F3F),
+                                width: 1.0,
+                              ),
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(5),
+                                topRight: Radius.circular(5),
+                                bottomLeft: Radius.circular(5),
+                                bottomRight: Radius.circular(5),
+                              ),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.white,
+                                  blurRadius: 10,
+                                  offset: Offset(0, 4),
+                                )
+                              ],
                             ),
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(5),
-                              topRight: Radius.circular(5),
-                              bottomLeft: Radius.circular(5),
-                              bottomRight: Radius.circular(5),
+                            child: TextField(
+                              controller: TextEditingController(
+                                  text: VoteController.description),
+                              onChanged: (value) =>
+                                  VoteController.changeDescriptionController(
+                                      value),
+                              cursorColor: Colors.black,
+                              decoration: const InputDecoration(
+                                contentPadding: EdgeInsets.only(
+                                    bottom: 15, left: 15, top: 30),
+                                border: InputBorder.none,
+                              ),
                             ),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Colors.white,
-                                blurRadius: 10,
-                                offset: Offset(0, 4),
-                              )
-                            ],
-                          ),
-                          child: const TextField(
-                            cursorColor: Colors.black,
-                            decoration: InputDecoration(
-                              contentPadding: EdgeInsets.only(
-                                  bottom: 15, left: 15, top: 30),
-                              border: InputBorder.none,
-                            ),
-                          ),
-                        ),
+                          );
+                        }),
                         /*----------------------------------------------*/
                         space,
                         Text(
@@ -180,49 +263,60 @@ class _CreerVoteState extends State<CreerVote> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        Container(
-                          margin: EdgeInsets.only(top: 50.h, right: 50.w),
-                          //padding: EdgeInsets.symmetric(vertical: .h),
-                          height: 120.h,
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: const Color(0xFF3F3F3F),
-                              width: 1.0,
+                        /*--------------------------*/
+                        //builder date debut vote
+                        GetBuilder<VoteController>(
+                            // ignore: avoid_types_as_parameter_names, non_constant_identifier_names
+                            builder: (VoteController) {
+                          return Container(
+                            margin: EdgeInsets.only(top: 50.h, right: 50.w),
+                            //padding: EdgeInsets.symmetric(vertical: .h),
+                            height: 120.h,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: const Color(0xFF3F3F3F),
+                                width: 1.0,
+                              ),
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(5),
+                                topRight: Radius.circular(5),
+                                bottomLeft: Radius.circular(5),
+                                bottomRight: Radius.circular(5),
+                              ),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.white,
+                                  blurRadius: 10,
+                                  offset: Offset(0, 4),
+                                )
+                              ],
                             ),
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(5),
-                              topRight: Radius.circular(5),
-                              bottomLeft: Radius.circular(5),
-                              bottomRight: Radius.circular(5),
-                            ),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Colors.white,
-                                blurRadius: 10,
-                                offset: Offset(0, 4),
-                              )
-                            ],
-                          ),
-                          child: TextField(
-                            controller: TextEditingController(
-                                text:
-                                    DateFormat('yyyy-MM-dd').format(_dateTime)),
-                            cursorColor: Colors.black,
-                            decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.only(
-                                  bottom: 15, left: 15, top: 30),
-                              border: InputBorder.none,
-                              suffixIcon: IconButton(
-                                onPressed: () {
-                                  _showDatePicker();
-                                },
-                                icon: const Icon(
-                                  Icons.calendar_today,
+                            child: TextField(
+                              controller: TextEditingController(
+                                  text: DateFormat('yyyy-MM-dd')
+                                      .format(_dateTime)),
+                              onChanged: (value) {
+                                VoteController.changeStartDateController(
+                                    DateFormat('yyyy-MM-dd').format(_dateTime));
+                              },
+                              cursorColor: Colors.black,
+                              decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.only(
+                                    bottom: 15, left: 15, top: 30),
+                                border: InputBorder.none,
+                                suffixIcon: IconButton(
+                                  onPressed: () {
+                                    _showDatePicker();
+                                  },
+                                  icon: const Icon(
+                                    Icons.calendar_today,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
+                          );
+                        }),
+
                         /*----------------------------------------------*/
 
                         space,
@@ -234,6 +328,69 @@ class _CreerVoteState extends State<CreerVote> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
+                        /*--------------------------*/
+                        //builder date limite vote
+                        GetBuilder<VoteController>(
+                            // ignore: avoid_types_as_parameter_names, non_constant_identifier_names
+                            builder: (VoteController) {
+                          return Container(
+                            margin: EdgeInsets.only(top: 50.h, right: 50.w),
+                            //padding: EdgeInsets.symmetric(vertical: .h),
+                            height: 120.h,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: const Color(0xFF3F3F3F),
+                                width: 1.0,
+                              ),
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(5),
+                                topRight: Radius.circular(5),
+                                bottomLeft: Radius.circular(5),
+                                bottomRight: Radius.circular(5),
+                              ),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.white,
+                                  blurRadius: 10,
+                                  offset: Offset(0, 4),
+                                )
+                              ],
+                            ),
+                            child: TextField(
+                              controller: TextEditingController(
+                                  text: DateFormat('yyyy-MM-dd')
+                                      .format(_dateTimeEnd)),
+                              onChanged: (value) =>
+                                  VoteController.changeEndDateController(
+                                      DateFormat('yyyy-MM-dd')
+                                          .format(_dateTime)),
+                              cursorColor: Colors.black,
+                              decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.only(
+                                    bottom: 15, left: 15, top: 30),
+                                border: InputBorder.none,
+                                suffixIcon: IconButton(
+                                  onPressed: () {
+                                    _showDatePickerEnd();
+                                  },
+                                  icon: const Icon(
+                                    Icons.calendar_today,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                        /*---------------------------------------------*/
+                        space,
+                        Text(
+                          'Heure de debut du Vote',
+                          style: GoogleFonts.poppins(
+                            fontSize: 50.sp,
+                            color: const Color(0xFF3F3F3F),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         Container(
                           margin: EdgeInsets.only(top: 50.h, right: 50.w),
                           //padding: EdgeInsets.symmetric(vertical: .h),
@@ -258,9 +415,10 @@ class _CreerVoteState extends State<CreerVote> {
                             ],
                           ),
                           child: TextField(
+                            /*controller: TextEditingController(
+                                  text: DateFormat('yyyy-MM-dd').format(_dateTimeEnd)),*/
                             controller: TextEditingController(
-                                text:
-                                    DateFormat('yyyy-MM-dd').format(_dateTime)),
+                                text: _heureDebut.format(context)),
                             cursorColor: Colors.black,
                             decoration: InputDecoration(
                               contentPadding: const EdgeInsets.only(
@@ -268,10 +426,63 @@ class _CreerVoteState extends State<CreerVote> {
                               border: InputBorder.none,
                               suffixIcon: IconButton(
                                 onPressed: () {
-                                  _showDatePicker();
+                                  _showTimePickerStart();
                                 },
                                 icon: const Icon(
-                                  Icons.calendar_today,
+                                  Icons.alarm,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        /*---------------------------------------------*/
+                        //heure de fin
+                        Text(
+                          'Heure de Fin du Vote',
+                          style: GoogleFonts.poppins(
+                            fontSize: 50.sp,
+                            color: const Color(0xFF3F3F3F),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(top: 50.h, right: 50.w),
+                          //padding: EdgeInsets.symmetric(vertical: .h),
+                          height: 120.h,
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: const Color(0xFF3F3F3F),
+                              width: 1.0,
+                            ),
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(5),
+                              topRight: Radius.circular(5),
+                              bottomLeft: Radius.circular(5),
+                              bottomRight: Radius.circular(5),
+                            ),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.white,
+                                blurRadius: 10,
+                                offset: Offset(0, 4),
+                              )
+                            ],
+                          ),
+                          child: TextField(
+                            /*controller: TextEditingController(text: DateFormat('yyyy-MM-dd').format(_dateTimeEnd)),*/
+                            controller: TextEditingController(
+                                text: _heureFin.format(context)),
+                            cursorColor: Colors.black,
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.only(
+                                  bottom: 15, left: 15, top: 30),
+                              border: InputBorder.none,
+                              suffixIcon: IconButton(
+                                onPressed: () {
+                                  _showTimePickerEnd();
+                                },
+                                icon: const Icon(
+                                  Icons.alarm,
                                 ),
                               ),
                             ),
@@ -422,11 +633,57 @@ class _CreerVoteState extends State<CreerVote> {
                               )
                             ],
                           ),
-                        )
-                        /*----------------------------------------------*/
+                        ),
                       ],
                     ),
                   ),
+
+                  /*----------------------------------------------*/
+                  //de soumission
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 550.w,
+                        height: 120.h,
+                        margin: const EdgeInsets.only(bottom: 30).r,
+                        decoration: BoxDecoration(
+                          color: primary,
+                          borderRadius: const BorderRadius.horizontal(
+                            left: Radius.circular(40),
+                            right: Radius.circular(40),
+                          ),
+                        ),
+                        child: MaterialButton(
+                          onPressed: () {
+                            creationVote();
+                          },
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.horizontal(
+                              left: Radius.circular(40),
+                              right: Radius.circular(40),
+                            ),
+                          ),
+                          child: Center(
+                            child: _isloading
+                                ? const Center(
+                                    child: CircularProgressIndicator(
+                                        color: Colors.white))
+                                : Text(
+                                    'Création',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 20,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  /*----------------------------------------------*/
                 ],
               ),
             ),
@@ -434,6 +691,89 @@ class _CreerVoteState extends State<CreerVote> {
         );
       },
     );
+  }
+
+  //fonction de creation d'un vote
+  Future<void> creationVote() async {
+    // ignore: avoid_print
+    print("creation du vote");
+    //form data qui seras envoyer pour la creation de la requette
+
+    try {
+      print("test");
+      setState(() {
+        _isloading = true;
+      });
+      const url = "http://10.0.2.2:8000/api/vote";
+      final uri = Uri.parse(url);
+      final formData = http.MultipartRequest('POST', uri);
+      formData.fields.addAll({
+        "title": voteController.titre,
+        "description": voteController.description,
+        "start_date": DateFormat('yyyy-MM-dd').format(_dateTime),
+        "end_date": DateFormat('yyyy-MM-dd').format(_dateTimeEnd),
+        "start_hour":
+            "${_heureDebut.hour}:${_heureDebut.minute.toString().padLeft(2, '0')}",
+        "statut": "plan",
+        "user_id": "1",
+        "end_hour": "${_heureFin.hour}:${_heureFin.minute.toString().padLeft(2, '0')}",
+      });
+
+      for (var entry in formData.fields.entries) {
+        print('${entry.key}: ${entry.value}');
+      }
+
+      final response = await formData.send();
+      if (response.statusCode == 201) {
+        // ignore: avoid_print
+        print("Success");
+        setState(() {
+          _isloading = false;
+        });
+        showAlertSucess("Votre vote a bien été créer");
+      } else {
+        // ignore: avoid_print
+        setState(() {
+          _isloading = false;
+        });
+        print("Upload failed with status ${response.statusCode}");
+        showErrorMessage(
+            "impossible de d'aboutir la requette \n veuiller verifier si tout les champs sont correcte");
+      }
+    } catch (e) {
+      setState(() {
+        _isloading = false;
+      });
+      showAlertWarning();
+      // ignore: avoid_print, unnecessary_brace_in_string_interps
+      print("error : $e");
+    }
+  }
+
+  /*------------------------------------------------*/
+  //cette fonction nous serviras a afficher une boite de dialoge
+  void showAlertWarning() {
+    QuickAlert.show(
+        context: context,
+        title: "Attention",
+        text: "impossible de joindre les serveurs",
+        type: QuickAlertType.warning);
+  }
+
+  void showErrorMessage(String message) {
+    QuickAlert.show(
+        context: context,
+        title: "Echec de l'opperation",
+        text: message,
+        type: QuickAlertType.error);
+  }
+
+  void showAlertSucess(String message) {
+    QuickAlert.show(
+        context: context,
+        title: "Oppération reussie",
+        text: message,
+        type: QuickAlertType.success);
   }
 }
 
