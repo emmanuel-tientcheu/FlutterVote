@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vote/organisateur/Controllers/candidatController.dart';
 import 'package:vote/organisateur/Controllers/voteController.dart';
+import 'package:vote/organisateur/ajouterCandidat.dart';
 
 import 'ajouterUnCandidat.dart';
 import 'navBar.dart';
@@ -437,6 +438,7 @@ class _CreerVoteState extends State<CreerVote> {
                         ),
                         /*---------------------------------------------*/
                         //heure de fin
+                        space,
                         Text(
                           'Heure de Fin du Vote',
                           style: GoogleFonts.poppins(
@@ -594,7 +596,8 @@ class _CreerVoteState extends State<CreerVote> {
                                 )
                                 .toList(),
                           );
-                        }),
+                        },
+                        ),
                         /*----------------------------------------------*/
 
                         space,
@@ -603,7 +606,7 @@ class _CreerVoteState extends State<CreerVote> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const AjoutCandidat(),
+                                builder: (context) => const AjouterCandidatVote(),
                               ),
                             );
                           },
