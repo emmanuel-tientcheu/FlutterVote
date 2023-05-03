@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -34,6 +36,9 @@ class _CreerVoteState extends State<CreerVote> {
   /*---------------------------------*/
   //variable pour le loader
   bool _isloading = false;
+  /*---------------------------------*/
+  //cette variable vas contenir l'id du vote creer
+  dynamic _idVote = 0;
 
   void _showDatePickerEnd() {
     showDatePicker(
@@ -535,7 +540,9 @@ class _CreerVoteState extends State<CreerVote> {
                                       child: InkResponse(
                                         radius: 20,
                                         onTap: () {
-                                          CandidatController.addAndRemoveNewCandidat(candidat);
+                                          CandidatController
+                                              .addAndRemoveNewCandidat(
+                                                  candidat);
                                         },
                                         child: const Icon(
                                           Icons.remove,
@@ -706,22 +713,43 @@ class _CreerVoteState extends State<CreerVote> {
         print('${entry.key}: ${entry.value}');
       }
 
-      final response = await formData.send();
-      if (response.statusCode == 201) {
-        // ignore: avoid_print
-        print("Success");
+      if (candidatController.candidat.length > 0) {
+        final response = await formData.send();
+        if (response.statusCode == 201) {
+          /*------------------------------------------*/
+          //recuperation de l'id de la creation
+          final streamResponse =
+              await response.stream.transform(utf8.decoder).toList();
+          final String responseString = streamResponse.join();
+          print(responseString);
+          setState(() {
+            _idVote = responseString;
+            print(_idVote);
+          });
+          //appel de la fonction d'ajout des candidats
+          addCandidat();
+          /*------------------------------------------*/
+          // ignore: avoid_print
+          print("Success");
+          setState(() {
+            _isloading = false;
+          });
+
+          showAlertSucess("Votre vote a bien été créer");
+        } else {
+          // ignore: avoid_print
+          setState(() {
+            _isloading = false;
+          });
+          print("Upload failed with status ${response.statusCode}");
+          showErrorMessage(
+              "impossible de d'aboutir la requette \n veuiller verifier si tout les champs sont correcte");
+        }
+      }else{
         setState(() {
           _isloading = false;
         });
-        showAlertSucess("Votre vote a bien été créer");
-      } else {
-        // ignore: avoid_print
-        setState(() {
-          _isloading = false;
-        });
-        print("Upload failed with status ${response.statusCode}");
-        showErrorMessage(
-            "impossible de d'aboutir la requette \n veuiller verifier si tout les champs sont correcte");
+        showErrorMessage("des candidats doivent etre assigné a un vote");
       }
     } catch (e) {
       setState(() {
@@ -731,6 +759,26 @@ class _CreerVoteState extends State<CreerVote> {
       // ignore: avoid_print, unnecessary_brace_in_string_interps
       print("error : $e");
     }
+  }
+
+  Future<void> addCandidat() async {
+    //recuperation des id des candidats selectionner
+    List listCandidatId = [];
+    for (int i = 0; i < candidatController.candidat.length; i++) {
+      listCandidatId.add(candidatController.candidat[i]['id']);
+    }
+    const url = "http://10.0.2.2:8000/api/vote_candidat";
+    final uri = Uri.parse(url);
+    final body = {"vote_id": _idVote, "candidat_ids": listCandidatId};
+
+    final response = await http.post(
+      uri,
+      body: jsonEncode(body),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    );
+    print(listCandidatId);
   }
 
   /*------------------------------------------------*/
