@@ -1,6 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import 'package:http/http.dart' as http;
+import 'package:vote/organisateur/Controllers/candidatController.dart';
+
+import 'package:get/get.dart';
 
 class AjouterCandidatVote extends StatefulWidget {
   const AjouterCandidatVote({super.key});
@@ -29,6 +36,10 @@ class _AjouterCandidatVoteState extends State<AjouterCandidatVote> {
     {"name": "romaric", "_isChecked": false},
   ];
   List _filtered = [];
+  /*--------------------------------------------*/
+  //controller qui contient la liste
+  CandidatController candidatController = Get.find();
+  List candidats = [];
 
   /*--------------------------------*/
   //fonction de recherche
@@ -44,6 +55,7 @@ class _AjouterCandidatVoteState extends State<AjouterCandidatVote> {
   @override
   void initState() {
     super.initState();
+    fetchCandidat();
     _filtered = _names;
   }
 
@@ -103,7 +115,7 @@ class _AjouterCandidatVoteState extends State<AjouterCandidatVote> {
                   ),
                   child: TextField(
                     onChanged: (value) {
-                      filterNames(value);
+                      candidatController.filteredCandidat(value);
                     },
                     controller: searchController,
                     cursorColor: Colors.black,
@@ -135,21 +147,24 @@ class _AjouterCandidatVoteState extends State<AjouterCandidatVote> {
                     child: Column(
                       children: [
                         SizedBox(height: 30.h),
-                        ListView.builder(
+                        //builder
+                        GetBuilder<CandidatController>(
+                            builder: (CandidatController) {
+                          return ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _filtered.length,
+                            itemCount:
+                                CandidatController.filteredListcandidat.length,
                             itemBuilder: (context, index) {
-                              final candidat = _filtered[index] as Map;
-                              //final id = candidat["id"];
-
+                              final candidat =
+                                  CandidatController.filteredListcandidat[index];
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
                                     children: [
-                                      //affichage photo de profile
-
+                                      /*---------------------------------------*/
+                                      //affichage de pa photo de profile
                                       Container(
                                         width: 150.w,
                                         height: 150.h,
@@ -173,11 +188,10 @@ class _AjouterCandidatVoteState extends State<AjouterCandidatVote> {
                                               fit: BoxFit.cover),
                                         ),
                                       ),
-
-                                      //end
-
-                                      //information
-                                      Expanded(
+                                      //fin de l'affichage 
+                                      /*---------------------------------------*/
+                                      //information du candidat 
+                                          Expanded(
                                         flex: 1,
                                         child: Container(
                                           margin: EdgeInsets.only(left: 80).r,
@@ -187,7 +201,7 @@ class _AjouterCandidatVoteState extends State<AjouterCandidatVote> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                candidat["name"],
+                                                candidat["complete_name"],
                                                 style: GoogleFonts.poppins(
                                                   fontSize: 50.sp,
                                                   color: secondary,
@@ -195,7 +209,7 @@ class _AjouterCandidatVoteState extends State<AjouterCandidatVote> {
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                               Text(
-                                                candidat["name"],
+                                                candidat["complete_name"],
                                                 style: GoogleFonts.poppins(
                                                   fontSize: 50.sp,
                                                   color: secondary,
@@ -206,8 +220,10 @@ class _AjouterCandidatVoteState extends State<AjouterCandidatVote> {
                                           ),
                                         ),
                                       ),
-
-                                      Container(
+                                      //fin de la partie d'affichage des information 
+                                      /*--------------------------------------------------*/
+                                      //input checkbox
+                                         Container(
                                         width: 90.w,
                                         height: 90.h,
                                         decoration: BoxDecoration(
@@ -218,15 +234,12 @@ class _AjouterCandidatVoteState extends State<AjouterCandidatVote> {
                                           ),
                                           color: primary,
                                         ),
-                                        child:InkResponse(
+                                        child: InkResponse(
                                           radius: 20,
                                           onTap: () {
-                                            setState(() {
-                                              candidat["_isChecked"] =
-                                                  !candidat["_isChecked"];
-                                            });
+                                            CandidatController.addAndRemoveNewCandidat(candidat);
                                           },
-                                          child: candidat["_isChecked"]
+                                          child: candidat["isChecked"]
                                               ? const Icon(
                                                   Icons.check,
                                                   size: 20,
@@ -235,14 +248,20 @@ class _AjouterCandidatVoteState extends State<AjouterCandidatVote> {
                                               : Container(),
                                         ),
                                       ),
+
                                     ],
                                   ),
-                                  SizedBox(
+                                  //fin checkbox
+                                   SizedBox(
                                     height: 50.h,
                                   )
                                 ],
                               );
-                            }),
+                            },
+                          );
+                        },
+                        ),
+                       
                       ],
                     ),
                   ),
@@ -255,5 +274,30 @@ class _AjouterCandidatVoteState extends State<AjouterCandidatVote> {
         );
       },
     );
+  }
+
+  //cette methode est utiliser pour recuperer les candidats au chargement de la page
+  Future<void> fetchCandidat() async {
+    try {
+      const url = "http://10.0.2.2:8000/api/filter_user?role=candidat";
+      final uri = Uri.parse(url);
+
+      final response = await http.post(uri);
+
+      if (response.statusCode == 200) {
+        final resultat = jsonDecode(response.body) as List;
+        for (dynamic result in resultat) {
+          result["isChecked"] = false;
+          candidats.add(result);
+          candidatController.chargerCandidat(result,resultat.length);
+        }
+        print(candidats);
+      } else {
+        print("error");
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print("error $e");
+    }
   }
 }

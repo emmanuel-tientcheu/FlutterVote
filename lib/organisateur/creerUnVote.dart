@@ -505,99 +505,77 @@ class _CreerVoteState extends State<CreerVote> {
                         /*----------------------------------------------*/
                         //map des candidats
                         GetBuilder<CandidatController>(
-                            // ignore: avoid_types_as_parameter_names, non_constant_identifier_names
                             builder: (CandidatController) {
-                          return Column(
-                            children: CandidatController.listeCandidat
-                                .asMap()
-                                .entries
-                                .map(
-                                  (candidat) => Container(
-                                    margin: const EdgeInsets.only(bottom: 30).r,
-                                    width: double.infinity,
-                                    child: Row(
+                          return ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: CandidatController.candidat.length,
+                            itemBuilder: ((context, index) {
+                              final candidat =
+                                  CandidatController.candidat[index];
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 30).r,
+                                width: double.infinity,
+                                child: Row(
+                                  children: [
+                                    /*---------------------------------------*/
+                                    //bouton pour retirer
+                                    Container(
+                                      margin: const EdgeInsets.only(
+                                              right: 30, bottom: 15)
+                                          .r,
+                                      width: 90.w,
+                                      height: 90.h,
+                                      decoration: BoxDecoration(
+                                        color: const Color.fromARGB(
+                                            174, 158, 158, 158),
+                                        borderRadius:
+                                            BorderRadius.circular(50.0),
+                                      ),
+                                      child: InkResponse(
+                                        radius: 20,
+                                        onTap: () {
+                                          CandidatController.addAndRemoveNewCandidat(candidat);
+                                        },
+                                        child: const Icon(
+                                          Icons.remove,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                    /*---------------------------------------*/
+                                    SizedBox(
+                                      width: 25.w,
+                                    ),
+                                    //affichage des nom et fonction des candidats
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        /*--------------------------------*/
-                                        //element cliquable pour retirer un cadidat de la liste
-                                        GestureDetector(
-                                          onTap: () {
-                                            candidatController
-                                                .retirerUnCandidat(
-                                                    candidat.key);
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  "le candidat a ete retirer",
-                                                  style: GoogleFonts.poppins(
-                                                    fontSize: 50.sp,
-                                                    color:
-                                                        const Color(0xFF3F3F3F),
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                                backgroundColor: Colors.red,
-                                              ),
-                                            );
-                                            //print(candidat.key);
-                                          },
-                                          child: Container(
-                                            margin: const EdgeInsets.only(
-                                                    right: 30, bottom: 15)
-                                                .r,
-                                            width: 90.w,
-                                            height: 90.h,
-                                            decoration: BoxDecoration(
-                                              color: const Color.fromARGB(
-                                                  174, 158, 158, 158),
-                                              borderRadius:
-                                                  BorderRadius.circular(50.0),
-                                            ),
-                                            child: const Center(
-                                              child: Icon(
-                                                Icons.remove,
-                                                color: Colors.white,
-                                              ),
-                                            ),
+                                        Text(
+                                          candidat['complete_name'],
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 40.sp,
+                                            color: const Color(0xFF3F3F3F),
+                                            fontWeight: FontWeight.w500,
                                           ),
                                         ),
-                                        /*---------------------------------------*/
-                                        SizedBox(
-                                          width: 25.w,
-                                        ),
-                                        //affichage des nom et fonction des candidats
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              candidat.value.nom,
-                                              style: GoogleFonts.poppins(
-                                                fontSize: 35.sp,
-                                                color: const Color(0xFF3F3F3F),
-                                              ),
-                                            ),
-                                            SizedBox(
-                                              height: 0.h,
-                                            ),
-                                            Text(
-                                              candidat.value.fonction,
-                                              style: GoogleFonts.poppins(
-                                                fontSize: 35.sp,
-                                                color: const Color(0xFF3F3F3F),
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ],
+                                        Text(
+                                          candidat['complete_name'],
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 40.sp,
+                                            color: const Color(0xFF3F3F3F),
+                                            fontWeight: FontWeight.w500,
+                                          ),
                                         ),
                                       ],
-                                    ),
-                                  ),
-                                )
-                                .toList(),
+                                    )
+                                  ],
+                                ),
+                              );
+                            }),
                           );
-                        },
-                        ),
+                        }),
                         /*----------------------------------------------*/
 
                         space,
@@ -606,7 +584,8 @@ class _CreerVoteState extends State<CreerVote> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const AjouterCandidatVote(),
+                                builder: (context) =>
+                                    const AjouterCandidatVote(),
                               ),
                             );
                           },
@@ -719,7 +698,8 @@ class _CreerVoteState extends State<CreerVote> {
             "${_heureDebut.hour}:${_heureDebut.minute.toString().padLeft(2, '0')}",
         "statut": "plan",
         "user_id": "1",
-        "end_hour": "${_heureFin.hour}:${_heureFin.minute.toString().padLeft(2, '0')}",
+        "end_hour":
+            "${_heureFin.hour}:${_heureFin.minute.toString().padLeft(2, '0')}",
       });
 
       for (var entry in formData.fields.entries) {
