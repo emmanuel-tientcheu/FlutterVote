@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:quickalert/quickalert.dart';
+import 'package:vote/organisateur/detailVote.dart';
 
 import 'navBar.dart';
 import 'package:http/http.dart' as http;
@@ -65,7 +66,7 @@ class _ListVoteState extends State<ListVote> {
                         itemBuilder: (context, index) {
                           //recupération de chacun des votes
                           final _vote = _listVote[index] as Map;
-                          final id = _vote["id"];
+                          final id = _vote["id"] ;
                           //opperation de caste de date
                           DateTime dateFin = DateTime.parse(_vote["end_date"]);
                           String dateFinString =
@@ -86,7 +87,11 @@ class _ListVoteState extends State<ListVote> {
                                     bottom: 10,
                                   ).r,
                                   decoration: BoxDecoration(
-                                    color: ternary,
+                                    color: _vote["statut"] == "plan"
+                                        ? Colors.amber[300]
+                                        : (_vote["statut"] == "pending"
+                                            ? ternary
+                                            : Colors.red[300]),
                                     borderRadius: BorderRadius.circular(10.0),
                                   ),
                                   child: Column(
@@ -133,7 +138,72 @@ class _ListVoteState extends State<ListVote> {
                                             ),
                                           ),
                                         ],
-                                      )
+                                      ),
+                                      Row(
+                                        children: [
+                                          Container(
+                                            margin: const EdgeInsets.only(
+                                                    top: 10, bottom: 10)
+                                                .r,
+                                            decoration: BoxDecoration(
+                                              color: Colors.blue,
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            width: 220.w,
+                                            height: 60.w,
+                                            child: MaterialButton(
+                                              onPressed: () {
+                                                navigateToPageDetails(_vote);
+                                              },
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  'Détails',
+                                                  style: GoogleFonts.poppins(
+                                                    fontSize: 40.sp,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width: 40.w,
+                                          ),
+                                          Container(
+                                            margin: const EdgeInsets.only(
+                                                    top: 10, bottom: 10)
+                                                .r,
+                                            decoration: BoxDecoration(
+                                              color: Colors.red,
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            width: 290.w,
+                                            height: 60.w,
+                                            child: MaterialButton(
+                                              onPressed: () {},
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  'Supprimer',
+                                                  style: GoogleFonts.poppins(
+                                                    fontSize: 40.sp,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -182,5 +252,13 @@ class _ListVoteState extends State<ListVote> {
         title: "Attention",
         text: "impossible de joindre les serveurs",
         type: QuickAlertType.warning);
+  }
+
+  /*------------------------------------------------*/
+  //cette fonction serivras a aller a la page details d'un vote
+  Future<void> navigateToPageDetails(Map _vote) async {
+    final route =
+        MaterialPageRoute(builder: (context) => DetailVote(itemVote: _vote));
+    Navigator.push(context, route);
   }
 }
