@@ -9,6 +9,7 @@ import 'package:quickalert/quickalert.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:vote/electeur/Navbar.dart';
+import 'package:vote/electeur/votePage.dart';
 
 class VotesCreer extends StatefulWidget {
   const VotesCreer({super.key});
@@ -153,7 +154,9 @@ class _VotesCreerState extends State<VotesCreer> {
                                         width: 220.w,
                                         height: 60.w,
                                         child: MaterialButton(
-                                            onPressed: () {},
+                                            onPressed: () {
+                                              navigateTopageVote(_vote);
+                                            },
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
                                                   BorderRadius.circular(20),
@@ -224,5 +227,9 @@ class _VotesCreerState extends State<VotesCreer> {
         type: QuickAlertType.warning);
   }
   /*------------------------------------------------*/
-  //cette fonction nous permettra d'aller a la page de vote  
+  //cette fonction nous permettra d'aller a la page de vote
+  Future<void> navigateTopageVote(Map _vote) async{
+    final route =  MaterialPageRoute(builder: (context) => VotePage(itemVote: _vote));
+    Navigator.push(context, route);
+  }
 }
