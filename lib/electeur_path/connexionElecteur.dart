@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vote/electeur/ElecteurMain.dart';
 import 'package:vote/electeur_path/allPageForInscriptionElecteur.dart';
 import 'package:vote/electeur_path/motDePasseOublie.dart';
 import 'package:vote/organisateur/organisateurMain.dart';
@@ -132,8 +133,10 @@ class _ConnexionElecteurState extends State<ConnexionElecteur> {
                                 SizedBox(height: ScreenUtil().setHeight(100)),
                                 MaterialButton(
                                   padding: const EdgeInsets.all(10),
-                                  onPressed: () {
-                                    Navigator.push(context, MaterialPageRoute(builder: (context) => const OrganisateurMain()));
+                                  onPressed: () { 
+                                    roleRecive == "electeur" ? 
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => const ElecteurMain())) :
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => const OrganisateurMain())) ;
                                   },
                                   color: Colors.white,
                                   shape: const RoundedRectangleBorder(
