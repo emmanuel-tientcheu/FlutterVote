@@ -204,7 +204,7 @@ class _VotesCreerState extends State<VotesCreer> {
           _listVote = result;
           isLoading = true;
           // ignore: avoid_print
-          print(_listVote[0]);
+          //print(_listVote[0]);
         });
       } else {
         // ignore: avoid_print

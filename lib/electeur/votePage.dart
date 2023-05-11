@@ -10,6 +10,8 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:quickalert/quickalert.dart';
 
+import 'package:get/get.dart';
+
 class VotePage extends StatefulWidget {
   final Map? itemVote;
   const VotePage({Key? key, required this.itemVote}) : super(key: key);
@@ -38,6 +40,11 @@ class _VotePageState extends State<VotePage> {
   List candidats = [];
 
   bool isLoading = false;
+  /*-----------------------------------------*/
+  //cette varaible contiendras les info pour voir si le user a voté
+  Map ifVote = {};
+  //cette varaible contiendras la copy du vote pour voir si les info ont changé
+  Map copIfVote = {};
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +52,7 @@ class _VotePageState extends State<VotePage> {
       designSize: const Size(1080, 2160),
       minTextAdapt: true,
       builder: (context, child) {
-        return MaterialApp(
+        return GetMaterialApp(
           debugShowCheckedModeBanner: false,
           home: Scaffold(
             backgroundColor: Colors.white,
@@ -262,12 +269,21 @@ class _VotePageState extends State<VotePage> {
                                                     color: primary,
                                                   ),
                                                   child: InkResponse(
-                                                     radius: 20,
-                                                     onTap: () {
-                                                       
-                                                     },
-                                                  )
-                                                )
+                                                      radius: 20,
+                                                      onTap: () {
+                                                        changeVote(candidat);
+                                                      },
+                                                      child:
+                                                          ifVote["candidat_id"] ==
+                                                                  candidat["id"]
+                                                              ? const Icon(
+                                                                  Icons.check,
+                                                                  size: 20,
+                                                                  color: Colors
+                                                                      .white,
+                                                                )
+                                                              : Container()),
+                                                ),
                                               ],
                                             );
                                           },
@@ -277,9 +293,41 @@ class _VotePageState extends State<VotePage> {
                                   ),
                                 ),
                                 //fin liste de candidats
+                                /*------------------------------------------*/
+                                //button de validation
+                                SizedBox(
+                                  height: 600.h,
+                                ),
+                                Container(
+                                  height: 100.h,
+                                  width: 520.w,
+                                  margin: const EdgeInsets.only(left: 250).w,
+                                  decoration: BoxDecoration(
+                                    color: primary,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: MaterialButton(
+                                    onPressed: () {
+                                      voteCandidat();
+                                    },
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        "Voter",
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 60.sp,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
-                          )
+                          ),
                         ],
                       );
                     }),
@@ -293,6 +341,7 @@ class _VotePageState extends State<VotePage> {
 
   Future<void> fetchVote() async {
     try {
+      print("le vote ${details["id"]}");
       final url = "http://10.0.2.2:8000/api/vote/${details["id"]}";
       final uri = Uri.parse(url);
       final response = await http.get(uri);
@@ -301,12 +350,112 @@ class _VotePageState extends State<VotePage> {
         final result = json['data'] as dynamic;
 
         setState(() {
-          actuDetails = result;
-          isLoading = true;
-          candidats = actuDetails["candidats"] as List;
+          if (actuDetails == null) {
+            actuDetails = result;
+            isLoading = true;
+            candidats = actuDetails["candidats"] as List;
+            fetch_if_vote();
+          }
         });
       }
     } catch (e) {
+      showAlertWarning();
+    }
+  }
+
+  Future<void> fetch_if_vote() async {
+    try {
+      final url =
+          "http://10.0.2.2:8000/api/electeur_has_voted?vote_id=${details["id"]}&electeur_id=1";
+      final uri = Uri.parse(url);
+      final response = await http.post(uri);
+      if (response.statusCode == 200) {
+        // ignore: avoid_print
+        print("dexieme partie");
+        final json = jsonDecode(response.body) as Map;
+        final result = json["data"] as Map;
+        setState(() {
+          ifVote = result;
+          copIfVote = result;
+        });
+        // ignore: avoid_print
+        print(result);
+      } else {
+        // ignore: avoid_print
+        print("error");
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print("error $e");
+    }
+  }
+
+  /*--------------------------------------------------*/
+  //cette fonction serviras a choisir un candidat
+  void changeVote(Map candidat) {
+    setState(() {
+      ifVote["candidat_id"] = candidat["id"];
+      print(ifVote);
+    });
+  }
+
+  /*--------------------------------------------------*/
+  //cette fonction sert a voter
+  Future<void> voteCandidat() async {
+    final body = {
+      "vote_id": details["id"],
+      "electeur_id": 1,
+      "candidat_id": ifVote["candidat_id"],
+    };
+    print(body);
+    try {
+      //DANS ce cas on considere que le user n'a jamais participer au vote
+      if (copIfVote["id"] == null) {
+        const url = "http://10.0.2.2:8000/api/vote_electeur";
+        final uri = Uri.parse(url);
+        final response = await http.post(
+          uri,
+          body: jsonEncode(body),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        );
+        if (response.statusCode == 201) {
+          showAlertSucess("Votre vote a bien été pris en compte");
+        } else {
+          showErrorMessage("Une Erreur ai survenue");
+        }
+      } else {
+        //ici le candidat a deja voté il s'agit de faire changer son vote
+        try {
+          final url = "http://10.0.2.2:8000/api/vote_electeur/${ifVote["id"]}";
+          final uri = Uri.parse(url);
+          final body2 = {
+            "candidat_id": ifVote["candidat_id"],
+            "voteElecteur": details["id"],
+          };
+          final response2 = await http.put(
+            uri,
+            body: jsonEncode(body2),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          );
+          if (response2.statusCode == 200) {
+            showAlertSucess("Votre changement de vote a bien été pris en compte");
+          } else {
+            showErrorMessage("Une Erreur ai survenue ${response2.statusCode}");
+          }
+        } catch (e) {
+          // ignore: avoid_print, unnecessary_brace_in_string_interps
+          print("error: ${e}");
+          showAlertWarning();
+        }
+        //showErrorMessage("vous avez deja participé");
+      }
+    } catch (e) {
+      // ignore: avoid_print, unnecessary_brace_in_string_interps
+      print("error: ${e}");
       showAlertWarning();
     }
   }
@@ -317,5 +466,21 @@ class _VotePageState extends State<VotePage> {
         title: "Attention",
         text: "impossible de joindre les serveurs",
         type: QuickAlertType.warning);
+  }
+
+  void showAlertSucess(String message) {
+    QuickAlert.show(
+        context: context,
+        title: "Oppération reussie",
+        text: message,
+        type: QuickAlertType.success);
+  }
+
+  void showErrorMessage(String message) {
+    QuickAlert.show(
+        context: context,
+        title: "Echec de l'opperation",
+        text: message,
+        type: QuickAlertType.error);
   }
 }
