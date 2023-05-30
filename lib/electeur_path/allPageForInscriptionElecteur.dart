@@ -9,6 +9,8 @@ import 'package:google_fonts/google_fonts.dart';
 //import 'package:vote/electeur_path/step1Inscription.dart';
 
 import 'package:get/get.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'inscriptionController.dart';
 import 'package:http/http.dart' as http;
 
@@ -556,7 +558,7 @@ class _AllPageInscriptionElecteurState extends State<AllPageInscriptionElecteur>
           _isloading = false;
         });
         print("Upload failed with status ${response.statusCode}");
-        showErrorMessage(
+        showAlertError(
             'l\'oppération de céation a echoué verifier vos informations');
       }
 
@@ -596,9 +598,17 @@ class _AllPageInscriptionElecteurState extends State<AllPageInscriptionElecteur>
       setState(() {
         _isloading = false;
       });
-      showErrorMessage("Error opperation");
+      showAlertError("Error opperation");
       print("Error opperation: $e");
     }
+  }
+
+   void showAlertError(String message) {
+    QuickAlert.show(
+        context: context,
+        title: "Oppération reussie",
+        text: message,
+        type: QuickAlertType.error);
   }
 
   void showSucessMessage(String message) {

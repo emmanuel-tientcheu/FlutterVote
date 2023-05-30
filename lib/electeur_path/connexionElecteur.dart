@@ -1,10 +1,16 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:quickalert/quickalert.dart';
 import 'package:vote/electeur/ElecteurMain.dart';
 import 'package:vote/electeur_path/allPageForInscriptionElecteur.dart';
 import 'package:vote/electeur_path/motDePasseOublie.dart';
 import 'package:vote/organisateur/organisateurMain.dart';
+
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ConnexionElecteur extends StatefulWidget {
   final String role;
@@ -21,6 +27,14 @@ class _ConnexionElecteurState extends State<ConnexionElecteur> {
     roleRecive = widget.role;
     print(roleRecive);
   }
+
+  /*-------------------------------*/
+  //variable de recuperation du text dans le input
+  TextEditingController _mdpController = TextEditingController();
+  TextEditingController _emailController = TextEditingController();
+  /*-------------------------------*/
+  //cette variable serviras a voir si la requette a deja ete traité
+  bool _isload = false;
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +73,7 @@ class _ConnexionElecteurState extends State<ConnexionElecteur> {
                       child: Column(
                         children: [
                           TextField(
+                            controller: _emailController,
                             decoration: InputDecoration(
                               contentPadding:
                                   const EdgeInsets.only(bottom: 15, top: 15),
@@ -77,6 +92,7 @@ class _ConnexionElecteurState extends State<ConnexionElecteur> {
                           ),
                           SizedBox(height: ScreenUtil().setWidth(50)),
                           TextField(
+                            controller: _mdpController,
                             obscureText: true,
                             decoration: InputDecoration(
                               contentPadding:
@@ -133,10 +149,14 @@ class _ConnexionElecteurState extends State<ConnexionElecteur> {
                                 SizedBox(height: ScreenUtil().setHeight(100)),
                                 MaterialButton(
                                   padding: const EdgeInsets.all(10),
-                                  onPressed: () { 
-                                    roleRecive == "electeur" ? 
-                                    Navigator.push(context, MaterialPageRoute(builder: (context) => const ElecteurMain())) :
-                                    Navigator.push(context, MaterialPageRoute(builder: (context) => const OrganisateurMain())) ;
+                                  onPressed: () {
+                                    roleRecive == "electeur"
+                                        ? /* Navigator.push(context, MaterialPageRoute(builder: (context) => const ElecteurMain()))*/ loginE()
+                                        : Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    const OrganisateurMain()));
                                   },
                                   color: Colors.white,
                                   shape: const RoundedRectangleBorder(
@@ -148,13 +168,15 @@ class _ConnexionElecteurState extends State<ConnexionElecteur> {
                                         color: Color(0xFF53d4ff), width: 2),
                                   ),
                                   child: Center(
-                                    child: Text(
-                                      'Se connecter',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 20,
-                                        color: const Color(0xFF53d4ff),
-                                      ),
-                                    ),
+                                    child: !_isload
+                                        ? Text(
+                                            'Se connecter',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 20,
+                                              color: const Color(0xFF53d4ff),
+                                            ),
+                                          )
+                                        : const CircularProgressIndicator(),
                                   ),
                                 ),
                               ],
@@ -189,7 +211,8 @@ class _ConnexionElecteurState extends State<ConnexionElecteur> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
-                                               AllPageInscriptionElecteur(role:roleRecive),
+                                              AllPageInscriptionElecteur(
+                                                  role: roleRecive),
                                         ),
                                       );
                                     },
@@ -215,6 +238,76 @@ class _ConnexionElecteurState extends State<ConnexionElecteur> {
           );
         });
   }
+
+  Future<void> loginE() async {
+    try {
+      setState(() {
+        _isload = true;
+      });
+      const url = "http://10.0.2.2:8000/api/login";
+      final uri = Uri.parse(url);
+
+      /*---------------------------*/
+      //code de la navigation vers la page des electeur
+      // Navigator.push(context, MaterialPageRoute(builder: (context) => const ElecteurMain()));
+      final body = {
+        "email": _emailController.text,
+        "password": _mdpController.text,
+      };
+
+      final response = await http.post(
+        uri,
+        body: jsonEncode(body),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _isload = false;
+        });
+        final json = jsonDecode(response.body) as Map;
+        // ignore: avoid_print
+        // print(json["role"]);
+        storeUserLog(json);
+      } else {
+        setState(() {
+          _isload = false;
+        });
+        showErrorMessage("les identifiant de connexion sont incoreectes");
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print(e);
+    }
+  }
+
+  //cette fonction sert a save un user apres le login
+  void storeUserLog(Map infoUser) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      //print("reccuperation ${prefs.getString('username')}");
+      prefs.setString("role", infoUser["role"]);
+      prefs.setString("username", infoUser["username"]);
+      prefs.setString("user_id", infoUser["user_id"]);
+      print("yes");
+    } catch (e) {
+      // ignore: avoid_print, unnecessary_brace_in_string_interps
+      print("error ${e}");
+    }
+  }
+
+  //cette fonction sert a rediriger le user s'il est deja loger
+  void getUserLog() async {}
+
+  void showErrorMessage(String message) {
+    QuickAlert.show(
+        context: context,
+        title: "Echec de l'opperation",
+        text: message,
+        type: QuickAlertType.error);
+  }
 }
 
 Widget headerSection = Container(
@@ -235,8 +328,6 @@ Widget headerSection = Container(
     ),
   ),
 );
-
-
 
 class MyClipper extends CustomClipper<Path> {
   @override

@@ -449,7 +449,7 @@ class _VotePageState extends State<VotePage> {
         } catch (e) {
           // ignore: avoid_print, unnecessary_brace_in_string_interps
           print("error: ${e}");
-          showAlertWarning();
+          showAlertWarning();  
         }
         //showErrorMessage("vous avez deja participé");
       }
