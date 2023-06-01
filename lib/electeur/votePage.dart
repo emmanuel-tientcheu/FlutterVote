@@ -11,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:quickalert/quickalert.dart';
 
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class VotePage extends StatefulWidget {
   final Map? itemVote;
@@ -342,7 +343,8 @@ class _VotePageState extends State<VotePage> {
   Future<void> fetchVote() async {
     try {
       print("le vote ${details["id"]}");
-      final url = "http://10.0.2.2:8000/api/vote/${details["id"]}";
+      final url =
+          "https://vote-app.deviatraining.com/vote/api/vote/${details["id"]}";
       final uri = Uri.parse(url);
       final response = await http.get(uri);
       if (response.statusCode == 200) {
@@ -365,8 +367,11 @@ class _VotePageState extends State<VotePage> {
 
   Future<void> fetch_if_vote() async {
     try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      int? electureur_id = prefs.getInt("user_id");
+      // print("id de lelecteur ${electureur_id}");
       final url =
-          "http://10.0.2.2:8000/api/electeur_has_voted?vote_id=${details["id"]}&electeur_id=1";
+          "https://vote-app.deviatraining.com/vote/api/electeur_has_voted?vote_id=${details["id"]}&electeur_id=${electureur_id}";
       final uri = Uri.parse(url);
       final response = await http.post(uri);
       if (response.statusCode == 200) {
@@ -402,16 +407,22 @@ class _VotePageState extends State<VotePage> {
   /*--------------------------------------------------*/
   //cette fonction sert a voter
   Future<void> voteCandidat() async {
-    final body = {
-      "vote_id": details["id"],
-      "electeur_id": 1,
-      "candidat_id": ifVote["candidat_id"],
-    };
-    print(body);
     try {
+      /*----------------------------*/
+      //on recupere l'id du candidat 
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      int? electureur_id = prefs.getInt("user_id");
+      /*----------------------------*/
+
+      final body = {
+        "vote_id": details["id"],
+        "electeur_id": electureur_id,
+        "candidat_id": ifVote["candidat_id"],
+      };
+      print(body);
       //DANS ce cas on considere que le user n'a jamais participer au vote
       if (copIfVote["id"] == null) {
-        const url = "http://10.0.2.2:8000/api/vote_electeur";
+        const url = "https://vote-app.deviatraining.com/vote/api/vote_electeur";
         final uri = Uri.parse(url);
         final response = await http.post(
           uri,
@@ -428,7 +439,8 @@ class _VotePageState extends State<VotePage> {
       } else {
         //ici le candidat a deja voté il s'agit de faire changer son vote
         try {
-          final url = "http://10.0.2.2:8000/api/vote_electeur/${ifVote["id"]}";
+          final url =
+              "https://vote-app.deviatraining.com/vote/api/vote_electeur/${ifVote["id"]}";
           final uri = Uri.parse(url);
           final body2 = {
             "candidat_id": ifVote["candidat_id"],
@@ -442,14 +454,15 @@ class _VotePageState extends State<VotePage> {
             },
           );
           if (response2.statusCode == 200) {
-            showAlertSucess("Votre changement de vote a bien été pris en compte");
+            showAlertSucess(
+                "Votre changement de vote a bien été pris en compte");
           } else {
             showErrorMessage("Une Erreur ai survenue ${response2.statusCode}");
           }
         } catch (e) {
           // ignore: avoid_print, unnecessary_brace_in_string_interps
           print("error: ${e}");
-          showAlertWarning();  
+          showAlertWarning();
         }
         //showErrorMessage("vous avez deja participé");
       }

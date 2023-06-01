@@ -272,7 +272,7 @@ class _DetailVoteState extends State<DetailVote> {
 
   Future<void> fetchDetails() async {
     try {
-      final url = "http://10.0.2.2:8000/api/vote/${details["id"]}";
+      final url = "https://vote-app.deviatraining.com/vote/api/vote/${details["id"]}";
       print(url);
       final uri = Uri.parse(url);
       final response = await http.get(uri);

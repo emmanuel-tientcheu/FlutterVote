@@ -15,6 +15,9 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:quickalert/quickalert.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
+
 class CreerVote extends StatefulWidget {
   const CreerVote({super.key});
 
@@ -689,11 +692,17 @@ class _CreerVoteState extends State<CreerVote> {
     //form data qui seras envoyer pour la creation de la requette
 
     try {
+      /*-------------------------*/
+      //recuperer l'id du createur 
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      print("reccuperation ${prefs.getString('username')}");
+      int? user_id = prefs.getInt("user_id");
+      /*------------------------*/
       print("test");
       setState(() {
         _isloading = true;
       });
-      const url = "http://10.0.2.2:8000/api/vote";
+      const url = "https://vote-app.deviatraining.com/vote/api/vote";
       final uri = Uri.parse(url);
       final formData = http.MultipartRequest('POST', uri);
       formData.fields.addAll({
@@ -702,11 +711,11 @@ class _CreerVoteState extends State<CreerVote> {
         "start_date": DateFormat('yyyy-MM-dd').format(_dateTime),
         "end_date": DateFormat('yyyy-MM-dd').format(_dateTimeEnd),
         "start_hour":
-            "${_heureDebut.hour}:${_heureDebut.minute.toString().padLeft(2, '0')}",
+            "${_heureDebut.hour.toString().padLeft(2, '0')}:${_heureDebut.minute.toString().padLeft(2, '0')}",
         "statut": "plan",
-        "user_id": "1",
+        "user_id": user_id.toString(),
         "end_hour":
-            "${_heureFin.hour}:${_heureFin.minute.toString().padLeft(2, '0')}",
+            "${_heureFin.hour.toString().padLeft(2, '0')}:${_heureFin.minute.toString().padLeft(2, '0')}",
       });
 
       for (var entry in formData.fields.entries) {
@@ -741,6 +750,10 @@ class _CreerVoteState extends State<CreerVote> {
           setState(() {
             _isloading = false;
           });
+          final responseStream = await response.stream;
+          final responseData = await http.ByteStream(responseStream).toBytes();
+          final responseString = utf8.decode(responseData);
+          print(responseString);
           print("Upload failed with status ${response.statusCode}");
           showErrorMessage(
               "impossible de d'aboutir la requette \n veuiller verifier si tout les champs sont correcte");
@@ -767,7 +780,7 @@ class _CreerVoteState extends State<CreerVote> {
     for (int i = 0; i < candidatController.candidat.length; i++) {
       listCandidatId.add(candidatController.candidat[i]['id']);
     }
-    const url = "http://10.0.2.2:8000/api/vote_candidat";
+    const url = "https://vote-app.deviatraining.com/vote/api/vote_candidat";
     final uri = Uri.parse(url);
     final body = {"vote_id": _idVote, "candidat_ids": listCandidatId};
 

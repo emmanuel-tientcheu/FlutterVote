@@ -219,7 +219,7 @@ class _ListVoteState extends State<ListVote> {
 
   Future<void> fetchVotes() async {
     try {
-      const url = "http://10.0.2.2:8000/api/vote";
+      const url = "https://vote-app.deviatraining.com/vote/api/vote";
       final uri = Uri.parse(url);
 
       final response = await http.get(uri);

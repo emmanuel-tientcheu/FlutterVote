@@ -152,11 +152,11 @@ class _ConnexionElecteurState extends State<ConnexionElecteur> {
                                   onPressed: () {
                                     roleRecive == "electeur"
                                         ? /* Navigator.push(context, MaterialPageRoute(builder: (context) => const ElecteurMain()))*/ loginE()
-                                        : Navigator.push(
+                                        : /*Navigator.push(
                                             context,
                                             MaterialPageRoute(
                                                 builder: (context) =>
-                                                    const OrganisateurMain()));
+                                                    const OrganisateurMain()));*/ loginO();
                                   },
                                   color: Colors.white,
                                   shape: const RoundedRectangleBorder(
@@ -176,7 +176,9 @@ class _ConnexionElecteurState extends State<ConnexionElecteur> {
                                               color: const Color(0xFF53d4ff),
                                             ),
                                           )
-                                        : const CircularProgressIndicator(),
+                                        : const CircularProgressIndicator(
+                                            color: Color(0xFF53d4ff),
+                                          ),
                                   ),
                                 ),
                               ],
@@ -244,7 +246,7 @@ class _ConnexionElecteurState extends State<ConnexionElecteur> {
       setState(() {
         _isload = true;
       });
-      const url = "http://10.0.2.2:8000/api/login";
+      const url = "https://vote-app.deviatraining.com/vote/api/login";
       final uri = Uri.parse(url);
 
       /*---------------------------*/
@@ -271,6 +273,52 @@ class _ConnexionElecteurState extends State<ConnexionElecteur> {
         // ignore: avoid_print
         // print(json["role"]);
         storeUserLog(json);
+        Navigator.push(context,MaterialPageRoute(builder: (context) => const ElecteurMain()));
+
+      } else {
+        setState(() {
+          _isload = false;
+        });
+        showErrorMessage("les identifiant de connexion sont incoreectes");
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print(e);
+    }
+  }
+
+  //cette fonction seras utiliser pour loger un organisateur
+  Future<void> loginO() async {
+    try {
+      setState(() {
+        _isload = true;
+      });
+      const url = "https://vote-app.deviatraining.com/vote/api/login";
+      final uri = Uri.parse(url);
+
+      final body = {
+        "email": _emailController.text,
+        "password": _mdpController.text,
+      };
+
+      final response = await http.post(
+        uri,
+        body: jsonEncode(body),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      );
+
+      
+      if (response.statusCode == 200) {
+        setState(() {
+          _isload = false;
+        });
+        final json = jsonDecode(response.body) as Map;
+        // ignore: avoid_print
+        // print(json["role"]);
+        storeUserLog(json);
+        Navigator.push(context,MaterialPageRoute(builder: (context) => const OrganisateurMain()));
       } else {
         setState(() {
           _isload = false;
@@ -287,10 +335,10 @@ class _ConnexionElecteurState extends State<ConnexionElecteur> {
   void storeUserLog(Map infoUser) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      //print("reccuperation ${prefs.getString('username')}");
+      print("reccuperation ${prefs.getString('username')}");
       prefs.setString("role", infoUser["role"]);
       prefs.setString("username", infoUser["username"]);
-      prefs.setString("user_id", infoUser["user_id"]);
+      prefs.setInt("user_id", infoUser["user_id"]);
       print("yes");
     } catch (e) {
       // ignore: avoid_print, unnecessary_brace_in_string_interps

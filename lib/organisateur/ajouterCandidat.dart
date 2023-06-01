@@ -279,7 +279,7 @@ class _AjouterCandidatVoteState extends State<AjouterCandidatVote> {
   //cette methode est utiliser pour recuperer les candidats au chargement de la page
   Future<void> fetchCandidat() async {
     try {
-      const url = "http://10.0.2.2:8000/api/filter_user?role=candidat";
+      const url = "https://vote-app.deviatraining.com/vote/api/filter_user?role=candidat";
       final uri = Uri.parse(url);
 
       final response = await http.post(uri);
