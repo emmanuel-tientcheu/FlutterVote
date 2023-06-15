@@ -18,17 +18,19 @@ import 'package:image_picker/image_picker.dart';
 
 class AllPageInscriptionElecteur extends StatefulWidget {
   final String role;
-  const AllPageInscriptionElecteur({Key? key, required this.role}) : super(key: key);
+  const AllPageInscriptionElecteur({Key? key, required this.role})
+      : super(key: key);
   @override
   State<AllPageInscriptionElecteur> createState() =>
       _AllPageInscriptionElecteurState();
 }
 
-class _AllPageInscriptionElecteurState extends State<AllPageInscriptionElecteur> {
-
+class _AllPageInscriptionElecteurState
+    extends State<AllPageInscriptionElecteur> {
   final Mycontroller name = Get.put(Mycontroller());
   final nameController = TextEditingController();
-  final InscriptionController inscriptionController = Get.put(InscriptionController());
+  final InscriptionController inscriptionController =
+      Get.put(InscriptionController());
   bool visible = true;
 
   final List<String> _Language = ["fr", "en"];
@@ -52,6 +54,7 @@ class _AllPageInscriptionElecteurState extends State<AllPageInscriptionElecteur>
     roleRecive = widget.role;
     print(roleRecive);
   }
+
   Future<void> _pickImage() async {
     try {
       if (_pickedFile == null) {
@@ -232,6 +235,7 @@ class _AllPageInscriptionElecteurState extends State<AllPageInscriptionElecteur>
                               ),
                             ),
                             /*---------------------*/
+                            /*---------------------*/
                             SizedBox(height: ScreenUtil().setWidth(50)),
                             TextField(
                               keyboardType: TextInputType.number,
@@ -257,6 +261,18 @@ class _AllPageInscriptionElecteurState extends State<AllPageInscriptionElecteur>
                               ),
                             ),
                             /*---------------------*/
+                          ],
+                        ),
+                      ),
+
+                      /*--------------------------------*/
+                      //page3
+                      /*--------------------------------*/
+                      Container(
+                        padding: const EdgeInsets.only(left: 15, right: 15),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                             SizedBox(height: ScreenUtil().setWidth(50)),
                             TextField(
                               controller: TextEditingController(
@@ -306,14 +322,6 @@ class _AllPageInscriptionElecteurState extends State<AllPageInscriptionElecteur>
                               ),
                             ),
                             /*---------------------*/
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.only(left: 15, right: 15),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
                             /*------------------------------ */
                             TextField(
                               controller: TextEditingController(
@@ -438,7 +446,7 @@ class _AllPageInscriptionElecteurState extends State<AllPageInscriptionElecteur>
                               ],
                             ),
                             /*-----------------*/
-                            SizedBox(height: ScreenUtil().setHeight(300)),
+                            SizedBox(height: ScreenUtil().setHeight(100)),
                             MaterialButton(
                               padding: const EdgeInsets.all(10),
                               onPressed: () {
@@ -467,14 +475,17 @@ class _AllPageInscriptionElecteurState extends State<AllPageInscriptionElecteur>
                           ],
                         ),
                       ),
+                      /*--------------------------------*/
+                      //page2
+                      /*--------------------------------*/
                       Container(
-                        color: Colors.blue,
+                        color: const Color(0xFF0CB7F2),
                       ),
                     ],
                   ),
             floatingActionButton: FloatingActionButton(
               onPressed: () {
-                if (_pageController.page! < 2) {
+                if (_pageController.page! < 1) {
                   _pageController.nextPage(
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOut,
@@ -482,6 +493,7 @@ class _AllPageInscriptionElecteurState extends State<AllPageInscriptionElecteur>
                 }
               },
               child: const Icon(Icons.arrow_forward),
+              backgroundColor: const Color(0xFF0CB7F2),
             ),
             floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           ),
@@ -529,7 +541,7 @@ class _AllPageInscriptionElecteurState extends State<AllPageInscriptionElecteur>
         filename: _image2!.path,
       );
 
-      const url = "http://10.0.2.2:8000/api/user";
+      const url = "https://vote-app.deviatraining.com/vote/api/user";
       final uri = Uri.parse(url);
       final formData = http.MultipartRequest('POST', Uri.parse(url));
       formData.fields.addAll({
@@ -598,15 +610,16 @@ class _AllPageInscriptionElecteurState extends State<AllPageInscriptionElecteur>
       setState(() {
         _isloading = false;
       });
-      showAlertError("Error opperation");
+      showAlertError(
+          "Echec de l'operation de creation de compte veuillez verifier tout les champs saisie et bien ajouter deux photo de votre cni ");
       print("Error opperation: $e");
     }
   }
 
-   void showAlertError(String message) {
+  void showAlertError(String message) {
     QuickAlert.show(
         context: context,
-        title: "Oppération reussie",
+        title: "Echec de l'operation",
         text: message,
         type: QuickAlertType.error);
   }
