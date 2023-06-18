@@ -342,6 +342,7 @@ class _VotePageState extends State<VotePage> {
 
   Future<void> fetchVote() async {
     try {
+      print("le details ${details}");
       print("le vote ${details["id"]}");
       final url =
           "https://vote-app.deviatraining.com/vote/api/vote/${details["id"]}";
@@ -349,13 +350,14 @@ class _VotePageState extends State<VotePage> {
       final response = await http.get(uri);
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body) as Map;
-        final result = json['data'] as dynamic;
-
+        final result = json['vote'] as Map;
+        print("le vote en question ${json["vote"] as Map}");
+        print("la liste des candidats${json["candidats"] as List}");
         setState(() {
           if (actuDetails == null) {
             actuDetails = result;
             isLoading = true;
-            candidats = actuDetails["candidats"] as List;
+            candidats = json["candidats"] as List;
             fetch_if_vote();
           }
         });
@@ -376,9 +378,10 @@ class _VotePageState extends State<VotePage> {
       final response = await http.post(uri);
       if (response.statusCode == 200) {
         // ignore: avoid_print
-        print("dexieme partie");
+        print("dexieme partie v2");
         final json = jsonDecode(response.body) as Map;
         final result = json["data"] as Map;
+        print("j'ai voté pour ${result}");
         setState(() {
           ifVote = result;
           copIfVote = result;
@@ -419,6 +422,7 @@ class _VotePageState extends State<VotePage> {
         "electeur_id": electureur_id,
         "candidat_id": ifVote["candidat_id"],
       };
+      print ("le json envoyer ${body}");
       print(body);
       //DANS ce cas on considere que le user n'a jamais participer au vote
       if (copIfVote["id"] == null) {

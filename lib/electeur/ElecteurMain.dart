@@ -160,6 +160,7 @@ class ElecteurMainState extends State<ElecteurMain> {
                                         height: 60.w,
                                         child: MaterialButton(
                                             onPressed: () {
+                                              print("les information du vote ${_vote}");
                                               navigateTopageVote(_vote);
                                             },
                                             shape: RoundedRectangleBorder(
@@ -201,6 +202,7 @@ class ElecteurMainState extends State<ElecteurMain> {
       //on recupere l'id du candidat
       SharedPreferences prefs = await SharedPreferences.getInstance();
       int? electureur_id = prefs.getInt("user_id");
+     // print("electeur id ${electureur_id}");
       /*-------------------------------*/
       //tempon id
       List _tmpId = [];
@@ -211,19 +213,29 @@ class ElecteurMainState extends State<ElecteurMain> {
 
       final response = await http.get(uri);
       if (response.statusCode == 200) {
+        print(response.body);
         final json = jsonDecode(response.body) as List;
         // ignore: avoid_print
-        print(json[0]["id"]);
-        //ici je recupere les id des vote aux quelle le candidat a participer
+        if(json.length > 0){
+
+          print(json[0]["vote_id"]);
+           //ici je recupere les id des vote aux quelle le candidat a participer
         for (int i = 0; i < json.length; i++) {
-          _tmpId.add(json[i]["id"]);
+          _tmpId.add(json[i]["vote_id"]);
         }
         //print(_tmpId);
 
         setState(() {
           _idVote = _tmpId;
-          fetchVoteById();
+          //fetchVoteById();
+          fectNewVoteById(json);
         });
+        }else{
+          setState(() {
+          isLoading = true;
+        });
+        }
+       
       } else {
         // ignore: avoid_print
         print("we have an error ${response.statusCode}");
@@ -276,6 +288,49 @@ class ElecteurMainState extends State<ElecteurMain> {
       showAlertWarning();
     }
   }
+
+  Future<void> fectNewVoteById(List json)async{
+    List _tmpListVote = [];
+    // ignore: avoid_print
+    print("dedans2");
+    List _tmpListeVote = [];
+    try {
+      /*---------------------*/
+      //on recupere l'id du candidat
+       SharedPreferences prefs = await SharedPreferences.getInstance();
+      int? electureur_id = prefs.getInt("user_id");
+      /*--------------------*/
+      //recupration des vote 
+      final url =  "https://vote-app.deviatraining.com/vote/api/user/${electureur_id}";
+      final uri = Uri.parse(url);
+      /*----------------- */
+      //recuperation 
+      final response = await http.get(uri);
+      //print(response.body);
+      if(response.statusCode == 200){
+        final json = jsonDecode(response.body) as List;
+        for(int i = 0 ; i < json.length ; i++){
+          if(json[i]["candidat_id"] !=null){
+            _tmpListeVote.add(json[i]);
+          }
+        }
+      }
+       /*---------------------*/
+      //fin  
+      setState(() {
+        isLoading = true;
+        _listVote = _tmpListeVote;
+      });
+    }catch (e) {
+      // ignore: avoid_print
+      print("error fetching");
+      setState(() {
+        isLoading = true;
+      });
+    }
+    
+  }
+
 
   /*------------------------------------------------*/
   //cette fonction nous permettra d'aller a la page de vote

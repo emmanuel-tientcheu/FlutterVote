@@ -1,61 +1,66 @@
 import 'dart:convert';
 
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
-import 'package:quickalert/quickalert.dart';
+
 
 import 'package:http/http.dart' as http;
-
+import 'package:quickalert/quickalert.dart';
+import 'package:vote/electeur/ElecteurMain.dart';
 import 'package:vote/electeur/Navbar.dart';
-import 'package:vote/electeur/votePage.dart';
+import 'package:vote/electeur/VoirStat.dart';
 
-class VotesCreer extends StatefulWidget {
-  const VotesCreer({super.key});
+
+class StatVote extends StatefulWidget {
+  const StatVote({super.key});
 
   @override
-  State<VotesCreer> createState() => _VotesCreerState();
+  State<StatVote> createState() => StatVoteMainState();
 }
 
-class _VotesCreerState extends State<VotesCreer> {
+class StatVoteMainState extends State<StatVote>{
+
   Color primary = const Color(0xFF0CB7F2);
   Color secondary = const Color(0xFF3F3F3F);
   Color ternary = const Color(0xFF8Fe3FF);
-  /*-----------------------------------------*/
-  //cette liste contiendras la lsite des vote get
-  List _listVote = [];
+  /*--------------------------*/
   bool isLoading = false;
-   /*----------------------*/
-  //au chargement de la page je recupère la liste de vote
+  /*--------------------------*/
+  //ce tableau vas contenir la liste des id votes
+  List _idVote = [];
+  //ce tableau vas contenir la liste des votes
+  List _listVote = [];
+
     @override
-    void initState() {
-    super.initState();
-    fetchVotes();
+      void initState() {
+        super.initState();
+        fetchVotes();
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return ScreenUtilInit(
       designSize: const Size(1080, 2160),
       minTextAdapt: true,
-      builder: (context, child) {
+       builder: (context, child) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
-          home: Scaffold(
-            backgroundColor: Colors.white,
+          home:Scaffold(
             drawer: const NavBarElecteur(),
             appBar: AppBar(
-              elevation: 0,
-              backgroundColor: const Color(0xFF0CB7F2),
-              title: Text(
-                'Consulter les votes',
+               backgroundColor: const Color(0xFF0CB7F2),
+               elevation: 0,
+               title: Text(
+                 'Voir Les Statistiques',
                 style: GoogleFonts.poppins(
                   fontSize: 70.sp,
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
                 ),
-              ),
+               ),
             ),
             body: Visibility(
               visible: isLoading,
@@ -155,7 +160,8 @@ class _VotesCreerState extends State<VotesCreer> {
                                         height: 60.w,
                                         child: MaterialButton(
                                             onPressed: () {
-                                              navigateTopageVote(_vote);
+                                              print("les information du vote ${_vote}");
+                                             navigateTopageStat(_vote);
                                             },
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
@@ -163,12 +169,11 @@ class _VotesCreerState extends State<VotesCreer> {
                                             ),
                                             child: Center(
                                               child: Text(
-                                                "Voter",
+                                                "Resultats",
                                                 style: GoogleFonts.poppins(
-                                                  fontSize: 40.sp,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Colors.white
-                                                ),
+                                                    fontSize: 40.sp,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Colors.white),
                                               ),
                                             )),
                                       )
@@ -185,41 +190,119 @@ class _VotesCreerState extends State<VotesCreer> {
             ),
           ),
         );
-      },
+       }
     );
   }
 
-  Future<void> fetchVotes() async {
-    try {
-      const url = "https://vote-app.deviatraining.com/vote/api/vote";
+  Future<void> fetchVotes() async{
+    //cette fonction est appeler au chargement de la page 
+    print("fetch votes stats");
+    try{
+   /*-------------------------------*/
+      //on recupere l'id du candidat
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      int? electureur_id = prefs.getInt("user_id");
+      /*-------------------------------*/
+      //tempon id
+      List _tmpId = [];
+      /*-------------------------------*/
+      final url = "https://vote-app.deviatraining.com/vote/api/user/${electureur_id}";
       final uri = Uri.parse(url);
-
       final response = await http.get(uri);
       if (response.statusCode == 200) {
-        final json = jsonDecode(response.body) as Map;
-        final result = json['data'] as List;
-        // ignore: avoid_print
-        print("reussi");
-        setState(() {
-          _listVote = result;
-          isLoading = true;
-          // ignore: avoid_print
-          //print(_listVote[0]);
+         print(response.body);
+         final json = jsonDecode(response.body) as List;
+        if(json.length > 0){
+          print(json[0]["vote_id"]);
+          //ici je recupere les id des vote aux quelle le candidat a participer
+          for (int i = 0; i < json.length; i++) {
+            _tmpId.add(json[i]["vote_id"]);
+          }
+          setState(() {
+          _idVote = _tmpId;
+          //fetchVoteById();
+          fectNewVoteById(json);
         });
-        
+
+        }else{
+          // ignore: avoid_print
+          print("we have an error ${response.statusCode}");
+          showErrorMessage();
+          setState(() {
+            isLoading = true;
+         });
+
+        }
       } else {
         // ignore: avoid_print
-        print("error");
+        print("we have an error ${response.statusCode}");
+        showErrorMessage();
+        setState(() {
+          isLoading = true;
+        });
+
       }
-    } catch (e) {
-      showAlertWarning();
+    }catch(e){
       // ignore: avoid_print
-      print("error $e");
+      print("error ${e}");
+      setState(() {
+        isLoading = true;
+      });
+      showAlertWarning();
     }
+
   }
 
-  /*------------------------------------------------*/
-  //cette fonction nous serviras a afficher une boite de dialoge
+  Future<void> fectNewVoteById(List json)async{
+    List _tmpListVote = [];
+    // ignore: avoid_print
+    print("dedans2 state");
+    List _tmpListeVote = [];
+    try {
+      /*---------------------*/
+      //on recupere l'id du candidat
+       SharedPreferences prefs = await SharedPreferences.getInstance();
+      int? electureur_id = prefs.getInt("user_id");
+      /*--------------------*/
+      //recupration des vote 
+      final url =  "https://vote-app.deviatraining.com/vote/api/user/${electureur_id}";
+      final uri = Uri.parse(url);
+      /*----------------- */
+      //recuperation 
+      final response = await http.get(uri);
+      //print(response.body);
+      if(response.statusCode == 200){
+        final json = jsonDecode(response.body) as List;
+        for(int i = 0 ; i < json.length ; i++){
+          if(json[i]["candidat_id"] !=null){
+            _tmpListeVote.add(json[i]);
+          }
+        }
+      }
+       /*---------------------*/
+      //fin  
+      setState(() {
+        isLoading = true;
+        _listVote = _tmpListeVote;
+      });
+    }catch (e) {
+      // ignore: avoid_print
+      print("error fetching");
+      setState(() {
+        isLoading = true;
+      });
+    }
+    
+  }
+
+/*------------------------------------------*/
+//cette fonction sert a voir les statistique d'un vote 
+Future<void> navigateTopageStat(Map _vote) async{
+  //VoirStat
+  final route =  MaterialPageRoute(builder: (context) => VoirStat(itemVote: _vote));
+    Navigator.push(context, route);
+}
+
   void showAlertWarning() {
     QuickAlert.show(
         context: context,
@@ -227,10 +310,11 @@ class _VotesCreerState extends State<VotesCreer> {
         text: "impossible de joindre les serveurs",
         type: QuickAlertType.warning);
   }
-  /*------------------------------------------------*/
-  //cette fonction nous permettra d'aller a la page de vote
-  Future<void> navigateTopageVote(Map _vote) async{
-    final route =  MaterialPageRoute(builder: (context) => VotePage(itemVote: _vote));
-    Navigator.push(context, route);
+  void showErrorMessage() {
+    QuickAlert.show(
+        context: context,
+        title: "Attention",
+        text: "une erreur est servenue veuillez réessayer plus tard",
+        type: QuickAlertType.error);
   }
 }

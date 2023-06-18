@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vote/electeur/ElecteurMain.dart';
+import 'package:vote/electeur/StatVote.dart';
 import 'package:vote/electeur/allVote.dart';
 
 class NavBarElecteur extends StatefulWidget {
@@ -55,9 +57,19 @@ class _NavaBarState extends State<NavBarElecteur> {
             ),
           ),
           spacer,
-          ListTile(
+          GestureDetector(
+            onTap: (){
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        const ElecteurMain(),
+                  ),
+                );
+            },
+            child: ListTile(
             title: Text(
-              "Voir votes",
+              "Mes Participations",
               style: GoogleFonts.poppins(
                 fontSize: 45.sp,
                 color: secondary,
@@ -69,9 +81,15 @@ class _NavaBarState extends State<NavBarElecteur> {
               size: 25,
             ),
           ),
+          ),
+          
           spacer,
-          ListTile(
-            title: Text(
+          GestureDetector(
+            onTap: (){
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> const StatVote()));
+            },
+            child: ListTile(
+              title: Text(
               "Statistiques",
               style: GoogleFonts.poppins(
                 fontSize: 45.sp,
@@ -82,6 +100,7 @@ class _NavaBarState extends State<NavBarElecteur> {
               Icons.done,
               color: secondary,
               size: 25,
+            ),
             ),
           ),
           spacer,
